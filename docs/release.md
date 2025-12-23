@@ -2,6 +2,9 @@
 
 ArgLib uses GitHub Actions with trusted publishing for TestPyPI and PyPI.
 
+## Documentation site
+Docs deploy via GitHub Pages using the `Docs` workflow on pushes to `main`.
+
 ## TestPyPI (manual)
 1. Run the `TestPyPI` workflow from GitHub Actions.
 2. Install from TestPyPI to validate the package:
