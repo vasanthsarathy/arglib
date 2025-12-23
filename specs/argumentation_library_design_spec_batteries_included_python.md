@@ -35,11 +35,14 @@ Design/workflow projects
 5. **Quality & critique**:
    - Missing assumptions, implicit premises, fallacy/pattern detection, circularity.
    - Coherence metrics and structural diagnostics.
+   - Evidence quality evaluation and edge validation (support/attack/neutral) with confidence.
+   - Credibility propagation and evidence-weighted strength scoring.
 6. **Visualization & export**:
    - Render to Graphviz/SVG/HTML.
    - Export/import JSON-LD, AIF, DOT, NetworkX.
 7. **Evaluation harness**:
    - Datasets adapters; model benchmarking; reproducible scoring.
+   - Pattern classification and argumentation dataset statistics.
 
 ## Out-of-scope (v1)
 - Full interactive web app; multi-user collaboration; storage/permissions (can be separate projects).
@@ -75,6 +78,30 @@ EvidenceItem(
 )
 ```
 
+### 2a) `SupportingDocument` (IntelliProof-style)
+Represents a source document for evidence cards.
+```python
+SupportingDocument(
+  id: str,
+  name: str,
+  type: str,
+  url: str,
+  metadata: dict | None = None,
+)
+```
+
+### 2b) `EvidenceCard` (IntelliProof-style)
+A structured evidence item with excerpts and confidence.
+```python
+EvidenceCard(
+  id: str,
+  title: str,
+  supporting_doc_id: str,
+  excerpt: str,
+  confidence: float,  # [-1, 1] or [0, 1] depending on task
+)
+```
+
 ### 3) `ArgumentUnit` (ADU / claim)
 ```python
 ArgumentUnit(
@@ -83,6 +110,9 @@ ArgumentUnit(
   type: Literal["fact","value","policy","other"] = "other",
   spans: list[TextSpan] = [],
   evidence: list[EvidenceItem] = [],
+  evidence_ids: list[str] = [],  # optional link to EvidenceCard entries
+  evidence_min: float | None = None,
+  evidence_max: float | None = None,
   metadata: dict = {},       # speaker, time, source confidence, etc.
 )
 ```
@@ -116,6 +146,21 @@ ArgumentGraph(
 
 Key design decision: **one canonical graph object** with multiple *views*.
 
+### 7) `ArgumentBundle` (argument as subgraph)
+In IntelliProof-style graphs, nodes are **claims** and edges are **support/attack**. In abstract argumentation, an **argument** is an atomic unit. ArgLib will support a higher-level abstraction where an **argument** can be defined as a connected subgraph (at least two claims with a relation), and a derived graph is built over these arguments.
+```python
+ArgumentBundle(
+  id: str,
+  units: list[str],          # claim ids included in the argument
+  relations: list[Relation], # internal edges
+  metadata: dict = {},
+)
+```
+API direction:
+- `ArgumentGraph.define_argument(units=[...], relations=[...]) -> ArgumentBundle`
+- `ArgumentGraph.to_argument_graph() -> DungAF` where nodes are bundles and edges are aggregated support/attack between bundles.
+This keeps claim-level edges consistent with Dung/ABA while allowing users to reason at a higher argument abstraction layer.
+
 ---
 
 # Library Architecture
@@ -131,6 +176,7 @@ Key design decision: **one canonical graph object** with multiple *views*.
   - Nodes become arguments
   - `attack` edges become attacks
   - optional: map undercut/rebut to attack variants
+  - when using `ArgumentBundle`, each bundle becomes an argument node; edges are aggregated across bundle boundaries
 
 Functions:
 - `extensions(semi=...)` for grounded / preferred / stable / complete
@@ -174,6 +220,13 @@ assumptions.suggest(G, edge=("c1","c2"), k=3)
 ### Pattern/fallacy detection
 - A YAML/JSON pattern bank + ML classifier.
 - `PatternMatcher.detect(G)` returns pattern matches with subgraph bindings.
+
+### IntelliProof-inspired analysis
+- Edge validation: classify support/attack/neutral with reasoning + confidence in [-1, 1].
+- Evidence checking: score evidence vs claim with reasoning + confidence.
+- Claim type classification with confidence scores.
+- Credibility propagation: evidence-initialized scores + weighted edge influence, iterative tanh.
+- Graph critique and reporting: argument flaws, pattern matches, and summary reports.
 
 ## Layer 3 — Applications & Integrations
 - `integrations/` for:
@@ -246,6 +299,11 @@ res = r.run(
 )
 ```
 
+### Credibility propagation (IntelliProof-style)
+- Initialize node scores from evidence values.
+- Iteratively update: `c_i^(t+1) = tanh(lambda * E_i + sum(w_ji * c_j^(t)))`.
+- Support edges add influence, attack edges subtract influence (using absolute source score).
+
 ## Explanations
 - For AAF: return *witnesses* (defense chains, attackers defeated).
 - For ABA: return dispute trees / derivations.
@@ -271,6 +329,12 @@ Suggested model set:
 
 Dataset alignment:
 - Provide adapters and training recipes for your **Absurd-Arguments** style graph-first generation (keeps structure stable).
+
+### Dataset generation & augmentation (argument-mining)
+- Graph-first dataset generation with pattern/fallacy templates.
+- Argument graph parsing from generated essays.
+- Linguistic style augmentation (formality, tone, fluency, verbosity, directness).
+- Dataset statistics and pattern classification utilities.
 
 ---
 
@@ -361,11 +425,14 @@ arglib/
 ## v0.2 (ABA)
 - ABA framework + at least one solver path (AF translation or direct)
 - Explanations (defense chains / dispute trees)
+- Edge validation + evidence scoring + credibility propagation
 
 ## v0.3 (Batteries)
 - Argument miner baseline (open-weight) + caching
 - Assumption generator
 - Pattern bank + matcher
+- Graph-first dataset generator + linguistic style augmentation
+- Pattern classification and dataset stats tooling
 
 ## v0.4 (Multimodal)
 - Evidence extractors for PDF/image (chunking + linking)

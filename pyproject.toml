@@ -23,6 +23,7 @@ dev = [
   "pytest",
   "ruff",
   "mypy",
+  "pypdf>=6.5.0",
 ]
 
 [tool.setuptools.packages.find]
