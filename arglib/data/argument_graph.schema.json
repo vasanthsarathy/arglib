@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ArgumentGraph",
+  "type": "object",
+  "required": ["units", "relations"],
+  "properties": {
+    "units": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["id", "text"],
+        "properties": {
+          "id": { "type": "string" },
+          "text": { "type": "string" },
+          "type": { "type": "string" },
+          "spans": { "type": "array" },
+          "evidence": { "type": "array" },
+          "metadata": { "type": "object" }
+        }
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["src", "dst", "kind"],
+        "properties": {
+          "src": { "type": "string" },
+          "dst": { "type": "string" },
+          "kind": { "type": "string" },
+          "weight": { "type": ["number", "null"] },
+          "rationale": { "type": ["string", "null"] },
+          "metadata": { "type": "object" }
+        }
+      }
+    },
+    "metadata": { "type": "object" }
+  }
+}

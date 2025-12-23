@@ -1,0 +1,13 @@
+site_name: ArgLib
+site_description: Argument graph tooling for analysis and reasoning.
+site_url: https://example.com/arglib
+
+theme:
+  name: mkdocs
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Tutorials: tutorials.md
+  - API Reference: api.md
+  - CLI: cli.md
