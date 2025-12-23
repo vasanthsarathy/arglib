@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from .evidence import EvidenceItem
 from .relations import Relation
@@ -30,7 +30,7 @@ class ArgumentGraph:
         self,
         text: str,
         claim_id: str | None = None,
-        type: str = "other",
+        type: Literal["fact", "value", "policy", "other"] = "other",
         spans: list[TextSpan] | None = None,
         evidence: list[EvidenceItem] | None = None,
         metadata: dict[str, Any] | None = None,
@@ -52,7 +52,7 @@ class ArgumentGraph:
         self,
         src: str,
         dst: str,
-        kind: str,
+        kind: Literal["support", "attack", "undercut", "rebut"],
         weight: float | None = None,
         rationale: str | None = None,
         metadata: dict[str, Any] | None = None,
@@ -79,7 +79,7 @@ class ArgumentGraph:
         unit_id: str,
         evidence_id: str,
         source: TextSpan | dict[str, Any],
-        stance: str,
+        stance: Literal["supports", "attacks", "neutral"],
         strength: float | None = None,
         quality: dict[str, Any] | None = None,
     ) -> EvidenceItem:
