@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from itertools import combinations
 
 from arglib.semantics.dung import DungAF
 
@@ -41,14 +42,31 @@ class ABAFramework:
                     changed = True
         return derived
 
-    def to_dung(self) -> DungAF:
+    def to_dung(self, max_assumption_set_size: int = 2) -> DungAF:
         af = DungAF(arguments=set(self.assumptions))
-        for attacker in self.assumptions:
-            derived = self._derive({attacker})
+        assumption_sets = self._assumption_sets(max_assumption_set_size)
+        for attacker_set in assumption_sets:
+            derived = self._derive(set(attacker_set))
             for target, contrary in self.contraries.items():
                 if contrary in derived:
-                    af.add_attack(attacker, target)
+                    attacker_id = self._format_assumption_set(attacker_set)
+                    af.add_attack(attacker_id, target)
         return af
+
+    def _assumption_sets(self, max_size: int) -> list[tuple[str, ...]]:
+        if max_size < 1:
+            return []
+        sorted_assumptions = sorted(self.assumptions)
+        sets: list[tuple[str, ...]] = []
+        for size in range(1, max_size + 1):
+            sets.extend(combinations(sorted_assumptions, size))
+        return sets
+
+    @staticmethod
+    def _format_assumption_set(assumptions: tuple[str, ...]) -> str:
+        if len(assumptions) == 1:
+            return assumptions[0]
+        return f"{{{'&'.join(assumptions)}}}"
 
     def compute(self, semantics: str = "preferred") -> dict[str, object]:
         af = self.to_dung()

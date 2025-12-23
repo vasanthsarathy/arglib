@@ -25,3 +25,16 @@ def test_aba_rules_induce_attacks():
     af = aba.to_dung()
 
     assert ("a", "b") in af.attacks
+
+
+def test_aba_multi_assumption_attack():
+    aba = ABAFramework()
+    aba.add_assumption("a")
+    aba.add_assumption("b")
+    aba.add_assumption("c")
+    aba.add_contrary("c", "p")
+    aba.add_rule(head="p", body=["a", "b"])
+
+    af = aba.to_dung(max_assumption_set_size=2)
+
+    assert ("{a&b}", "c") in af.attacks
