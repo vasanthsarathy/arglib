@@ -28,11 +28,26 @@ class ABAFramework:
     def add_rule(self, head: str, body: list[str] | None = None) -> None:
         self.rules.append(Rule(head=head, body=list(body or [])))
 
+    def _derive(self, premises: set[str]) -> set[str]:
+        derived = set(premises)
+        changed = True
+        while changed:
+            changed = False
+            for rule in self.rules:
+                if rule.head in derived:
+                    continue
+                if all(term in derived for term in rule.body):
+                    derived.add(rule.head)
+                    changed = True
+        return derived
+
     def to_dung(self) -> DungAF:
         af = DungAF(arguments=set(self.assumptions))
-        for assumption, contrary in self.contraries.items():
-            if contrary in self.assumptions:
-                af.add_attack(assumption, contrary)
+        for attacker in self.assumptions:
+            derived = self._derive({attacker})
+            for target, contrary in self.contraries.items():
+                if contrary in derived:
+                    af.add_attack(attacker, target)
         return af
 
     def compute(self, semantics: str = "preferred") -> dict[str, object]:
@@ -41,10 +56,7 @@ class ABAFramework:
             extensions = [sorted(ext) for ext in af.extensions(semantics)]
         except ValueError:
             extensions = []
-        note = (
-            "Computed via a minimal assumption-contrary translation "
-            "(rules are not yet used)."
-        )
+        note = "Computed via a minimal assumption-contrary translation."
         return {
             "semantics": semantics,
             "assumptions": sorted(self.assumptions),

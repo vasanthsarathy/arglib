@@ -13,3 +13,15 @@ def test_aba_framework_add_and_compute():
     assert result["contraries"]["a"] == "not_a"
     assert result["rules"] == [{"head": "p", "body": ["a"]}]
     assert result["extensions"] == [["a"]]
+
+
+def test_aba_rules_induce_attacks():
+    aba = ABAFramework()
+    aba.add_assumption("a")
+    aba.add_assumption("b")
+    aba.add_contrary("b", "p")
+    aba.add_rule(head="p", body=["a"])
+
+    af = aba.to_dung()
+
+    assert ("a", "b") in af.attacks
