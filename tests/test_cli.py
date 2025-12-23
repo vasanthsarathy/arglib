@@ -32,3 +32,20 @@ def test_cli_diagnostics(tmp_path, capsys):
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["node_count"] == 1
+
+
+def test_cli_aba(tmp_path, capsys):
+    payload = {
+        "assumptions": ["a", "b"],
+        "contraries": {"b": "p"},
+        "rules": [{"head": "p", "body": ["a"]}],
+    }
+    path = tmp_path / "aba.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    exit_code = main(["aba", str(path), "--semantics", "preferred"])
+
+    captured = capsys.readouterr()
+    result = json.loads(captured.out)
+    assert exit_code == 0
+    assert result["extensions"]
