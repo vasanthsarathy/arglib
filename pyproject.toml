@@ -19,6 +19,7 @@ arglib = "arglib.cli.main:main"
 dev = [
   "build",
   "mkdocs",
+  "mkdocs-material",
   "pytest",
   "ruff",
   "mypy",

@@ -3,7 +3,23 @@ site_description: Argument graph tooling for analysis and reasoning.
 site_url: https://example.com/arglib
 
 theme:
-  name: mkdocs
+  name: material
+  language: en
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.instant
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: black
+      accent: deep orange
+    - scheme: slate
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
 
 nav:
   - Home: index.md
