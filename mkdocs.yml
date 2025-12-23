@@ -26,6 +26,7 @@ nav:
   - Getting Started: getting-started.md
   - Tutorials: tutorials.md
   - Contributing: contributing.md
+  - Roadmap: roadmap.md
   - API Reference: api.md
   - v0.1 API Surface: v0-1.md
   - CLI: cli.md

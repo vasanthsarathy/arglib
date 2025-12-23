@@ -421,11 +421,13 @@ arglib/
 - `ArgumentGraph` + IO JSON + Graphviz render
 - Dung AF conversion + grounded/preferred/stable
 - Basic diagnostics (cycles, components)
+ - CLI validation + docs scaffolding
 
 ## v0.2 (ABA)
 - ABA framework + at least one solver path (AF translation or direct)
 - Explanations (defense chains / dispute trees)
 - Edge validation + evidence scoring + credibility propagation
+ - Argument bundling (argument = subgraph) + projection to argument graph
 
 ## v0.3 (Batteries)
 - Argument miner baseline (open-weight) + caching
@@ -437,9 +439,11 @@ arglib/
 ## v0.4 (Multimodal)
 - Evidence extractors for PDF/image (chunking + linking)
 - Graph provenance enhancements
+ - Evidence card + supporting document pipelines
 
 ## v1.0
 - Stable API, docs, tutorials, benchmark scripts, model cards
+ - Integrations (LangChain/LlamaIndex), evaluation harness, and reporting
 
 ---
 
