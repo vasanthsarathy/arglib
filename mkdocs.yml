@@ -9,6 +9,7 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Tutorials: tutorials.md
+  - Contributing: contributing.md
   - API Reference: api.md
   - CLI: cli.md
   - Releases: release.md

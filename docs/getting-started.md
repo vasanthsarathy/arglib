@@ -9,6 +9,11 @@
 uv sync
 ```
 
+## Run checks before pushing
+```bash
+scripts/check.sh
+```
+
 ## Create a graph
 ```python
 from arglib.core import ArgumentGraph

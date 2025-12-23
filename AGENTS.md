@@ -11,6 +11,7 @@ Use `uv` for packaging and environment management:
 - `uv run ruff format .` to format code when formatting is enabled.
 - `uv run mypy .` for static type checks.
 - `uv add <package>` to add runtime dependencies, `uv add --dev <package>` for dev tools.
+For a pre-push quality gate, run `scripts/check.sh`.
 
 ## Coding Style & Naming Conventions
 Target Python conventions for new code:
