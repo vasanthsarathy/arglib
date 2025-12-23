@@ -102,6 +102,19 @@ class ArgumentGraph:
             "metadata": self.metadata,
         }
 
+    def save(self, path: str, *, indent: int = 2) -> None:
+        from arglib.io import save
+
+        save(path, self, indent=indent)
+
+    def render(self, path: str, *, engine: str = "graphviz") -> None:
+        if engine != "graphviz":
+            raise ValueError(f"Unsupported engine: {engine}")
+        from arglib.viz import to_dot
+
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(to_dot(self))
+
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ArgumentGraph:
         units = {

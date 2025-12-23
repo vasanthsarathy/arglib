@@ -26,7 +26,7 @@ def test_cli_diagnostics(tmp_path, capsys):
     path = tmp_path / "graph.json"
     save(path, graph)
 
-    exit_code = main(["diagnostics", str(path)])
+    exit_code = main(["diagnostics", str(path), "--validate"])
 
     captured = capsys.readouterr()
     payload = json.loads(captured.out)

@@ -18,12 +18,22 @@ def build_parser() -> argparse.ArgumentParser:
 
     dot_parser = subparsers.add_parser("dot", help="Export a graph JSON file to DOT.")
     dot_parser.add_argument("path", help="Path to a graph JSON file.")
+    dot_parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="Validate the graph JSON before exporting.",
+    )
 
     diag_parser = subparsers.add_parser(
         "diagnostics",
         help="Print diagnostics for a graph JSON file.",
     )
     diag_parser.add_argument("path", help="Path to a graph JSON file.")
+    diag_parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="Validate the graph JSON before computing diagnostics.",
+    )
 
     subparsers.add_parser("version", help="Print the ArgLib version.")
 
@@ -55,12 +65,12 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "dot":
-        graph = load(args.path)
+        graph = load(args.path, validate=args.validate)
         print(to_dot(graph))
         return 0
 
     if args.command == "diagnostics":
-        graph = load(args.path)
+        graph = load(args.path, validate=args.validate)
         print(json.dumps(graph.diagnostics(), indent=2, sort_keys=True))
         return 0
 

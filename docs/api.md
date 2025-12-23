@@ -5,6 +5,8 @@ This is a lightweight overview of the public API. Full API documentation will ex
 ## Core
 - `ArgumentGraph`: graph container and helpers (`arglib/core/graph.py`)
 - `ArgumentUnit`, `Relation`, `TextSpan`, `EvidenceItem`: core data models
+    - `ArgumentGraph.save(path)` writes JSON via the IO layer.
+    - `ArgumentGraph.render(path, engine="graphviz")` writes DOT output.
 
 ## Semantics
 - `DungAF`: Dung-style abstract argumentation framework (`arglib/semantics/dung.py`)
