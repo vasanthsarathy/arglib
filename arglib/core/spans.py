@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Literal, Optional, Tuple
+from typing import Any, Literal
 
 
 @dataclass
@@ -12,11 +12,11 @@ class TextSpan:
     start: int
     end: int
     text: str
-    page: Optional[int] = None
-    bbox: Optional[Tuple[float, float, float, float]] = None
+    page: int | None = None
+    bbox: tuple[float, float, float, float] | None = None
     modality: Literal["text", "pdf", "image", "video", "audio"] = "text"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "doc_id": self.doc_id,
             "start": self.start,
@@ -28,7 +28,7 @@ class TextSpan:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "TextSpan":
+    def from_dict(cls, data: dict[str, Any]) -> TextSpan:
         return cls(
             doc_id=data["doc_id"],
             start=data["start"],

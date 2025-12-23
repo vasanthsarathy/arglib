@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Literal
+from typing import Any, Literal
 
 from .evidence import EvidenceItem
 from .spans import TextSpan
@@ -14,11 +14,11 @@ class ArgumentUnit:
     id: str
     text: str
     type: Literal["fact", "value", "policy", "other"] = "other"
-    spans: List[TextSpan] = field(default_factory=list)
-    evidence: List[EvidenceItem] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    spans: list[TextSpan] = field(default_factory=list)
+    evidence: list[EvidenceItem] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "text": self.text,
@@ -29,12 +29,14 @@ class ArgumentUnit:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "ArgumentUnit":
+    def from_dict(cls, data: dict[str, Any]) -> ArgumentUnit:
         return cls(
             id=data["id"],
             text=data["text"],
             type=data.get("type", "other"),
             spans=[TextSpan.from_dict(span) for span in data.get("spans", [])],
-            evidence=[EvidenceItem.from_dict(item) for item in data.get("evidence", [])],
+            evidence=[
+                EvidenceItem.from_dict(item) for item in data.get("evidence", [])
+            ],
             metadata=data.get("metadata", {}),
         )

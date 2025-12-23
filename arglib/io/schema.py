@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
 
 
-def validate_graph_dict(data: Dict[str, Any]) -> List[str]:
-    errors: List[str] = []
+def validate_graph_dict(data: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
     if not isinstance(data, dict):
         return ["Graph payload must be a dictionary."]
 
@@ -58,8 +58,10 @@ def validate_graph_dict(data: Dict[str, Any]) -> List[str]:
     return errors
 
 
-def validate_graph_payload(data: Dict[str, Any]) -> None:
+def validate_graph_payload(data: dict[str, Any]) -> None:
     errors = validate_graph_dict(data)
     if errors:
-        message = "Invalid graph payload:\n" + "\n".join(f"- {error}" for error in errors)
+        message = "Invalid graph payload:\n" + "\n".join(
+            f"- {error}" for error in errors
+        )
         raise ValueError(message)

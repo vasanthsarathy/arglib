@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Dict
-
 from arglib.core import ArgumentGraph
 
 
 def to_dot(graph: ArgumentGraph) -> str:
-    color_map: Dict[str, str] = {
+    color_map: dict[str, str] = {
         "support": "green",
         "attack": "red",
         "undercut": "orange",
@@ -23,13 +21,15 @@ def to_dot(graph: ArgumentGraph) -> str:
     for relation in graph.relations:
         color = color_map.get(relation.kind, "black")
         label = _escape_label(relation.kind)
-        lines.append(
-            f'  "{relation.src}" -> "{relation.dst}" [label="{label}", color="{color}"];'
+        edge = (
+            f'  "{relation.src}" -> "{relation.dst}" '
+            f'[label="{label}", color="{color}"];'
         )
+        lines.append(edge)
 
     lines.append("}")
     return "\n".join(lines)
 
 
 def _escape_label(text: str) -> str:
-    return text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
+    return text.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")

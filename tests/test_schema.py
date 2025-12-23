@@ -1,4 +1,5 @@
 import json
+
 import pytest
 
 from arglib.core import ArgumentGraph

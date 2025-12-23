@@ -3,30 +3,32 @@
 from __future__ import annotations
 
 from collections import deque
-from typing import Dict, Iterable, List, Sequence, Set, Tuple
+from collections.abc import Iterable, Sequence
 
 
 def build_edges(
-    relations: Iterable[Tuple[str, str, str]],
+    relations: Iterable[tuple[str, str, str]],
     kinds: Sequence[str] | None = None,
-) -> List[Tuple[str, str]]:
-    edges: List[Tuple[str, str]] = []
+) -> list[tuple[str, str]]:
+    edges: list[tuple[str, str]] = []
     for src, dst, kind in relations:
         if kinds is None or kind in kinds:
             edges.append((src, dst))
     return edges
 
 
-def find_cycles(nodes: Iterable[str], edges: Iterable[Tuple[str, str]]) -> List[List[str]]:
-    adjacency: Dict[str, List[str]] = {node: [] for node in nodes}
+def find_cycles(
+    nodes: Iterable[str], edges: Iterable[tuple[str, str]]
+) -> list[list[str]]:
+    adjacency: dict[str, list[str]] = {node: [] for node in nodes}
     for src, dst in edges:
         adjacency.setdefault(src, []).append(dst)
         adjacency.setdefault(dst, [])
 
-    seen: Set[str] = set()
-    stack: List[str] = []
-    on_stack: Set[str] = set()
-    cycles: Set[Tuple[str, ...]] = set()
+    seen: set[str] = set()
+    stack: list[str] = []
+    on_stack: set[str] = set()
+    cycles: set[tuple[str, ...]] = set()
 
     def record_cycle(start_index: int) -> None:
         cycle = stack[start_index:]
@@ -58,15 +60,15 @@ def find_cycles(nodes: Iterable[str], edges: Iterable[Tuple[str, str]]) -> List[
 
 def weakly_connected_components(
     nodes: Iterable[str],
-    edges: Iterable[Tuple[str, str]],
-) -> List[List[str]]:
-    adjacency: Dict[str, Set[str]] = {node: set() for node in nodes}
+    edges: Iterable[tuple[str, str]],
+) -> list[list[str]]:
+    adjacency: dict[str, set[str]] = {node: set() for node in nodes}
     for src, dst in edges:
         adjacency.setdefault(src, set()).add(dst)
         adjacency.setdefault(dst, set()).add(src)
 
     remaining = set(adjacency.keys())
-    components: List[List[str]] = []
+    components: list[list[str]] = []
     while remaining:
         start = remaining.pop()
         queue = deque([start])
@@ -82,7 +84,9 @@ def weakly_connected_components(
     return components
 
 
-def in_out_degree(nodes: Iterable[str], edges: Iterable[Tuple[str, str]]) -> Dict[str, Dict[str, int]]:
+def in_out_degree(
+    nodes: Iterable[str], edges: Iterable[tuple[str, str]]
+) -> dict[str, dict[str, int]]:
     degrees = {node: {"in": 0, "out": 0} for node in nodes}
     for src, dst in edges:
         degrees.setdefault(src, {"in": 0, "out": 0})
@@ -94,19 +98,19 @@ def in_out_degree(nodes: Iterable[str], edges: Iterable[Tuple[str, str]]) -> Dic
 
 def strongly_connected_components(
     nodes: Iterable[str],
-    edges: Iterable[Tuple[str, str]],
-) -> List[List[str]]:
-    adjacency: Dict[str, List[str]] = {node: [] for node in nodes}
+    edges: Iterable[tuple[str, str]],
+) -> list[list[str]]:
+    adjacency: dict[str, list[str]] = {node: [] for node in nodes}
     for src, dst in edges:
         adjacency.setdefault(src, []).append(dst)
         adjacency.setdefault(dst, [])
 
     index = 0
-    index_map: Dict[str, int] = {}
-    lowlink: Dict[str, int] = {}
-    stack: List[str] = []
-    on_stack: Set[str] = set()
-    components: List[List[str]] = []
+    index_map: dict[str, int] = {}
+    lowlink: dict[str, int] = {}
+    stack: list[str] = []
+    on_stack: set[str] = set()
+    components: list[list[str]] = []
 
     def visit(node: str) -> None:
         nonlocal index
@@ -124,7 +128,7 @@ def strongly_connected_components(
                 lowlink[node] = min(lowlink[node], index_map[neighbor])
 
         if lowlink[node] == index_map[node]:
-            component: List[str] = []
+            component: list[str] = []
             while True:
                 member = stack.pop()
                 on_stack.remove(member)
@@ -142,16 +146,16 @@ def strongly_connected_components(
 
 def reachability_map(
     nodes: Iterable[str],
-    edges: Iterable[Tuple[str, str]],
-) -> Dict[str, Set[str]]:
-    adjacency: Dict[str, Set[str]] = {node: set() for node in nodes}
+    edges: Iterable[tuple[str, str]],
+) -> dict[str, set[str]]:
+    adjacency: dict[str, set[str]] = {node: set() for node in nodes}
     for src, dst in edges:
         adjacency.setdefault(src, set()).add(dst)
         adjacency.setdefault(dst, set())
 
-    reachability: Dict[str, Set[str]] = {}
+    reachability: dict[str, set[str]] = {}
     for start in adjacency:
-        visited: Set[str] = set()
+        visited: set[str] = set()
         queue = deque([start])
         while queue:
             node = queue.popleft()

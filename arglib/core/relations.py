@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 
 @dataclass
@@ -11,11 +11,11 @@ class Relation:
     src: str
     dst: str
     kind: Literal["support", "attack", "undercut", "rebut"]
-    weight: Optional[float] = None
-    rationale: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    weight: float | None = None
+    rationale: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "src": self.src,
             "dst": self.dst,
@@ -26,7 +26,7 @@ class Relation:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Relation":
+    def from_dict(cls, data: dict[str, Any]) -> Relation:
         return cls(
             src=data["src"],
             dst=data["dst"],

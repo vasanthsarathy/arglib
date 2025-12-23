@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Literal, Optional, Union
+from typing import Any, Literal
 
 from .spans import TextSpan
 
-EvidenceSource = Union[TextSpan, Dict[str, Any]]
+EvidenceSource = TextSpan | dict[str, Any]
 
 
 @dataclass
@@ -15,10 +15,10 @@ class EvidenceItem:
     id: str
     source: EvidenceSource
     stance: Literal["supports", "attacks", "neutral"]
-    strength: Optional[float] = None
-    quality: Dict[str, Any] = field(default_factory=dict)
+    strength: float | None = None
+    quality: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         if isinstance(self.source, TextSpan):
             source_payload = {
                 "type": "text_span",
@@ -39,7 +39,7 @@ class EvidenceItem:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "EvidenceItem":
+    def from_dict(cls, data: dict[str, Any]) -> EvidenceItem:
         source_data = data["source"]
         if isinstance(source_data, dict) and source_data.get("type") == "text_span":
             source = TextSpan.from_dict(source_data["value"])

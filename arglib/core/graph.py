@@ -3,23 +3,25 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 
 from .evidence import EvidenceItem
 from .relations import Relation
 from .spans import TextSpan
 from .units import ArgumentUnit
 
+if TYPE_CHECKING:
+    from arglib.semantics import DungAF
 
 @dataclass
 class ArgumentGraph:
-    units: Dict[str, ArgumentUnit] = field(default_factory=dict)
-    relations: List[Relation] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    units: dict[str, ArgumentUnit] = field(default_factory=dict)
+    relations: list[Relation] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def new(cls, title: Optional[str] = None) -> "ArgumentGraph":
-        metadata: Dict[str, Any] = {}
+    def new(cls, title: str | None = None) -> ArgumentGraph:
+        metadata: dict[str, Any] = {}
         if title:
             metadata["title"] = title
         return cls(metadata=metadata)
@@ -27,11 +29,11 @@ class ArgumentGraph:
     def add_claim(
         self,
         text: str,
-        claim_id: Optional[str] = None,
+        claim_id: str | None = None,
         type: str = "other",
-        spans: Optional[List[TextSpan]] = None,
-        evidence: Optional[List[EvidenceItem]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        spans: list[TextSpan] | None = None,
+        evidence: list[EvidenceItem] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> str:
         if claim_id is None:
             claim_id = self._next_id("c")
@@ -51,9 +53,9 @@ class ArgumentGraph:
         src: str,
         dst: str,
         kind: str,
-        weight: Optional[float] = None,
-        rationale: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        weight: float | None = None,
+        rationale: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Relation:
         relation = Relation(
             src=src,
@@ -76,10 +78,10 @@ class ArgumentGraph:
         self,
         unit_id: str,
         evidence_id: str,
-        source: TextSpan | Dict[str, Any],
+        source: TextSpan | dict[str, Any],
         stance: str,
-        strength: Optional[float] = None,
-        quality: Optional[Dict[str, Any]] = None,
+        strength: float | None = None,
+        quality: dict[str, Any] | None = None,
     ) -> EvidenceItem:
         if unit_id not in self.units:
             raise KeyError(f"Unknown unit id: {unit_id}")
@@ -93,7 +95,7 @@ class ArgumentGraph:
         self.units[unit_id].evidence.append(item)
         return item
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "units": {unit_id: unit.to_dict() for unit_id, unit in self.units.items()},
             "relations": [relation.to_dict() for relation in self.relations],
@@ -101,18 +103,16 @@ class ArgumentGraph:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "ArgumentGraph":
+    def from_dict(cls, data: dict[str, Any]) -> ArgumentGraph:
         units = {
             unit_id: ArgumentUnit.from_dict(unit_data)
             for unit_id, unit_data in data.get("units", {}).items()
         }
-        relations = [
-            Relation.from_dict(item) for item in data.get("relations", [])
-        ]
+        relations = [Relation.from_dict(item) for item in data.get("relations", [])]
         metadata = data.get("metadata", {})
         return cls(units=units, relations=relations, metadata=metadata)
 
-    def to_dung(self, include_relations: Optional[List[str]] = None) -> "DungAF":
+    def to_dung(self, include_relations: list[str] | None = None) -> DungAF:
         from arglib.semantics import DungAF
 
         if include_relations is None:
@@ -124,7 +124,7 @@ class ArgumentGraph:
                 af.add_attack(relation.src, relation.dst)
         return af
 
-    def diagnostics(self) -> Dict[str, Any]:
+    def diagnostics(self) -> dict[str, Any]:
         from arglib.algorithms import (
             build_edges,
             find_cycles,
@@ -143,10 +143,16 @@ class ArgumentGraph:
         degrees = in_out_degree(nodes, all_edges)
         reachability = reachability_map(nodes, all_edges)
 
-        isolated = [node for node, degree in degrees.items() if degree["in"] == 0 and degree["out"] == 0]
+        isolated = [
+            node
+            for node, degree in degrees.items()
+            if degree["in"] == 0 and degree["out"] == 0
+        ]
         support_edges = build_edges(relations, kinds=["support"])
         support_degrees = in_out_degree(nodes, support_edges)
-        unsupported = [node for node, degree in support_degrees.items() if degree["in"] == 0]
+        unsupported = [
+            node for node, degree in support_degrees.items() if degree["in"] == 0
+        ]
         attack_edges = build_edges(relations, kinds=["attack", "undercut", "rebut"])
 
         node_count = len(nodes)
@@ -176,11 +182,15 @@ class ArgumentGraph:
                 "max_in": max(degree_totals, default=0),
                 "max_out": max(out_totals, default=0),
             },
-            "reachability": {node: sorted(targets) for node, targets in reachability.items()},
-            "max_reachability": max((len(targets) for targets in reachability.values()), default=0),
+            "reachability": {
+                node: sorted(targets) for node, targets in reachability.items()
+            },
+            "max_reachability": max(
+                (len(targets) for targets in reachability.values()), default=0
+            ),
         }
 
-    def critique(self) -> Dict[str, Any]:
+    def critique(self) -> dict[str, Any]:
         from arglib.critique import suggest_missing_assumptions
 
         return {

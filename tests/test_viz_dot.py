@@ -11,6 +11,6 @@ def test_to_dot_contains_nodes_and_edges():
     dot = to_dot(graph)
 
     assert "digraph ArgumentGraph" in dot
-    assert f"\"{a}\"" in dot
-    assert f"\"{b}\"" in dot
+    assert f'"{a}"' in dot
+    assert f'"{b}"' in dot
     assert "attack" in dot
