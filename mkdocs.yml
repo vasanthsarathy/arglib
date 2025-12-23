@@ -11,3 +11,4 @@ nav:
   - Tutorials: tutorials.md
   - API Reference: api.md
   - CLI: cli.md
+  - Releases: release.md

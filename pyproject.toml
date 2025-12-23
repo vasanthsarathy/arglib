@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "arglib"
 version = "0.0.1"
@@ -6,17 +10,26 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 dependencies = []
+urls = { "Repository" = "https://github.com/vasanthsarathy/arglib" }
 
 [project.scripts]
 arglib = "arglib.cli.main:main"
 
 [dependency-groups]
 dev = [
+  "build",
   "mkdocs",
   "pytest",
   "ruff",
   "mypy",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["arglib*"]
+
+[tool.setuptools.package-data]
+arglib = ["data/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
