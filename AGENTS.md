@@ -44,7 +44,7 @@ This repo is tracking toward the spec milestones:
 Keep new work mapped to these milestones, and update the spec if scope shifts.
 
 ## Current Focus
-Next milestone: v0.2 ABA dispute trees and reasoning explanations. Maintain API stability for v0.1 while extending ABA.
+Next milestone: v0.2 ABA dispute trees and reasoning explanations. Evidence scoring and edge validation still pending; bundling + credibility propagation complete.
 
 ## Specification Updates
 Major behavior changes should update the design spec in `specs/argumentation_library_design_spec_batteries_included_python.md` so implementation and documentation stay aligned.

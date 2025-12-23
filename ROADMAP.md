@@ -14,6 +14,7 @@ This file mirrors `docs/roadmap.md` for quick reference in the repo root.
 - Evidence scoring and edge validation with confidence.
 - Credibility propagation (evidence + network influence).
 - Argument bundling: argument = subgraph; bundle graph projection.
+Current status: bundling + credibility propagation complete; dispute trees and edge validation pending.
 
 ## v0.3 (AI/mining + datasets)
 - Argument mining pipeline: ADU extraction, relations, claim types, alignment.

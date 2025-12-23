@@ -7,6 +7,8 @@ This is a lightweight overview of the public API. Full API documentation will ex
 - `ArgumentUnit`, `Relation`, `TextSpan`, `EvidenceItem`: core data models
     - `ArgumentGraph.save(path)` writes JSON via the IO layer.
     - `ArgumentGraph.render(path, engine="graphviz")` writes DOT output.
+- `EvidenceCard` and `SupportingDocument` for evidence pipelines.
+- `ArgumentBundle` and `ArgumentBundleGraph` for argument-as-subgraph abstraction.
 
 ## Semantics
 - `DungAF`: Dung-style abstract argumentation framework (`arglib/semantics/dung.py`)
@@ -14,6 +16,7 @@ This is a lightweight overview of the public API. Full API documentation will ex
 
 ## Reasoning
 - `Reasoner`: unified reasoning entrypoint (`arglib/reasoning/reasoner.py`)
+- `compute_credibility`: evidence + edge propagation scoring (`arglib/reasoning/credibility.py`)
 
 ## I/O
 - `dumps`/`loads`: JSON serialization (`arglib/io/json.py`)
