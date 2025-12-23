@@ -32,6 +32,7 @@ Design/workflow projects
 4. **Ingestion / mining**:
    - Text → ADUs + relations (+ claim type) + alignment.
    - Multimodal evidence → extracted snippets/frames/regions linked to nodes.
+   - Long-document mining: configurable chunking, per-chunk graphs, and graph merging.
 5. **Quality & critique**:
    - Missing assumptions, implicit premises, fallacy/pattern detection, circularity.
    - Coherence metrics and structural diagnostics.

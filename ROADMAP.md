@@ -22,6 +22,7 @@ Current status: bundling + credibility propagation complete; dispute trees and e
 - Pattern bank + matcher + fallacy detection.
 - Graph-first dataset generator + linguistic style augmentation.
 - Dataset stats and pattern classification utilities.
+- Long-document mining: chunking, per-chunk graphs, and graph merging.
 
 ## v0.4 (Multimodal + provenance)
 - Evidence extraction for PDF/image/video with provenance.
