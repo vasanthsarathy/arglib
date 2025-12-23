@@ -416,28 +416,28 @@ arglib/
 
 ---
 
-# Design Decisions (Open/Proposed)
-These are areas that need explicit choices as we scale beyond v0.1. Proposed defaults are included.
+# Design Decisions (Locked)
+These choices are fixed unless explicitly revised.
 
 ## Evidence scoring location
-- **Open**: store evidence strength on `EvidenceItem`, on `EvidenceCard`, or both.
-- **Proposed**: treat `EvidenceCard.confidence` as the canonical evidence score and sync into `EvidenceItem.strength` when evidence is attached to a claim (so both are available for propagation and export).
+- Store evidence strength on both `EvidenceItem` and `EvidenceCard`.
+- `EvidenceCard.confidence` is canonical; sync into `EvidenceItem.strength` on attach.
 
 ## Edge validation + weights
-- **Open**: should edge weights be separate from LLM confidence, or derived directly?
-- **Proposed**: keep `Relation.weight` as the canonical edge weight (for propagation/graph algorithms) and store LLM confidence in `Relation.metadata["confidence"]` plus reasoning in `Relation.rationale`.
+- `Relation.weight` is the canonical edge weight for propagation/graph algorithms.
+- LLM confidence is stored in `Relation.metadata["confidence"]` with reasoning in `Relation.rationale`.
 
 ## Claim graph vs. argument graph projection
-- **Open**: how to aggregate support/attack across `ArgumentBundle` boundaries.
-- **Proposed**: sum signed weights across cross-bundle edges and then clamp to [-1, 1]. Provide alternate aggregation modes (mean, max, softmax) in API.
+- Aggregate cross-bundle edges by summing signed weights and clamping to [-1, 1].
+- Provide alternate aggregation modes (mean, max, softmax) in API.
 
 ## BipolarAF timing
-- **Open**: when to formalize `BipolarAF` as a first-class projection.
-- **Proposed**: add `BipolarAF` in v0.2 alongside ABA dispute trees, using support edges as positive influences and attack edges as negative influences.
+- `BipolarAF` becomes first-class in v0.2 alongside ABA dispute trees.
+- Support edges are positive influences; attack edges are negative influences.
 
 ## Evidence score ranges
-- **Open**: standardize evidence/edge scores to [-1, 1] or [0, 1].
-- **Proposed**: use [-1, 1] for support/attack confidence and keep [0, 1] for quality/reliability sub-scores in `EvidenceItem.quality`.
+- Use [-1, 1] for support/attack confidence (edges, evidence confidence).
+- Use [0, 1] for quality/reliability sub-scores in `EvidenceItem.quality`.
 
 ---
 
