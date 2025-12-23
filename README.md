@@ -1,34 +1,53 @@
-# arglib
-ArgLib: Python Library for reasoning over argument graphs
+# ArgLib
+
+[![PyPI](https://img.shields.io/pypi/v/arglib)](https://pypi.org/project/arglib/)
+[![Python](https://img.shields.io/pypi/pyversions/arglib)](https://pypi.org/project/arglib/)
+[![CI](https://github.com/vasanthsarathy/arglib/actions/workflows/ci.yml/badge.svg)](https://github.com/vasanthsarathy/arglib/actions/workflows/ci.yml)
+[![Docs](https://github.com/vasanthsarathy/arglib/actions/workflows/docs.yml/badge.svg)](https://vasanthsarathy.github.io/arglib/)
+[![License](https://img.shields.io/github/license/vasanthsarathy/arglib)](LICENSE)
+
+ArgLib is a batteries-included Python library for creating, importing, analyzing, and reasoning over argument graphs derived from text and multimodal evidence.
+
+## Highlights
+- Canonical `ArgumentGraph` model with provenance-aware nodes and relations.
+- Dung semantics (grounded/preferred/stable/complete) and basic ABA tooling.
+- Diagnostics for cycles, components, reachability, and degree stats.
+- JSON IO with schema validation and Graphviz DOT export.
+- CLI tools for DOT, diagnostics, validation, and ABA.
+
+## Install
+```bash
+python -m pip install arglib
+```
 
 ## Quickstart
-Install dependencies with `uv`, then run tests:
-```bash
-uv sync
-uv run pytest
-```
-
-## CLI examples
-Export a graph JSON file to DOT:
-```bash
-uv run arglib dot path/to/graph.json
-```
-
-Print diagnostics:
-```bash
-uv run arglib diagnostics path/to/graph.json
-```
-
-## Reasoner example
 ```python
 from arglib.core import ArgumentGraph
 from arglib.reasoning import Reasoner
 
-graph = ArgumentGraph.new()
-a = graph.add_claim("A")
-b = graph.add_claim("B")
-graph.add_attack(a, b)
+graph = ArgumentGraph.new(title="Parks")
+c1 = graph.add_claim("Green spaces reduce urban heat.", type="fact")
+c2 = graph.add_claim("Cities should fund parks.", type="policy")
+graph.add_support(c1, c2, rationale="Cooling improves health")
 
 reasoner = Reasoner(graph)
 results = reasoner.run(["grounded_extension", "grounded_labeling"])
 ```
+
+## CLI examples
+```bash
+arglib dot path/to/graph.json
+arglib diagnostics path/to/graph.json --validate
+arglib validate path/to/graph.json
+arglib aba path/to/aba.json --semantics preferred
+```
+
+## Development
+This repo uses `uv` for dependency management.
+```bash
+uv sync
+scripts/check.sh
+```
+
+## Documentation
+Full docs and guides are available at https://vasanthsarathy.github.io/arglib/.
