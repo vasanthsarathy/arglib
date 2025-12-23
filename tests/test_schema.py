@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from arglib.core import ArgumentGraph
+from arglib.core import ArgumentGraph, EvidenceCard, SupportingDocument
 from arglib.io import loads, validate_graph_dict, validate_graph_payload
 
 
@@ -11,6 +11,19 @@ def test_validate_graph_payload_ok():
     a = graph.add_claim("A")
     b = graph.add_claim("B")
     graph.add_attack(a, b)
+    graph.add_supporting_document(
+        SupportingDocument(id="doc1", name="Doc", type="pdf", url="file://doc1")
+    )
+    graph.add_evidence_card(
+        EvidenceCard(
+            id="e1",
+            title="Evidence",
+            supporting_doc_id="doc1",
+            excerpt="...",
+            confidence=0.9,
+        )
+    )
+    graph.attach_evidence_card(a, "e1")
 
     payload = graph.to_dict()
     errors = validate_graph_dict(payload)

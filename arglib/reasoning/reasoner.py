@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from typing import Any
 
 from arglib.core import ArgumentGraph
+from arglib.reasoning.credibility import compute_credibility
 
 
 class Reasoner:
@@ -34,6 +35,12 @@ class Reasoner:
                 ]
             elif task_key == "grounded_labeling":
                 results[task] = af.labelings("grounded")[0]
+            elif task_key == "credibility_propagation":
+                credibility = compute_credibility(self.graph)
+                results[task] = {
+                    "initial_evidence": credibility.initial_evidence,
+                    "final_scores": credibility.final_scores,
+                }
             else:
                 raise ValueError(f"Unsupported task: {task}")
 

@@ -1,4 +1,4 @@
-from arglib.core import ArgumentGraph, TextSpan
+from arglib.core import ArgumentGraph, EvidenceCard, SupportingDocument, TextSpan
 from arglib.io import dumps, loads
 
 
@@ -23,6 +23,19 @@ def test_graph_roundtrip():
         stance="supports",
         strength=0.9,
     )
+    graph.add_supporting_document(
+        SupportingDocument(id="doc1", name="Doc", type="pdf", url="file://doc1")
+    )
+    graph.add_evidence_card(
+        EvidenceCard(
+            id="e2",
+            title="Card",
+            supporting_doc_id="doc1",
+            excerpt="...",
+            confidence=0.8,
+        )
+    )
+    graph.attach_evidence_card(c2, "e2")
 
     payload = dumps(graph)
     restored = loads(payload)
@@ -31,3 +44,4 @@ def test_graph_roundtrip():
     assert restored.units[c1].text == "Green spaces reduce urban heat."
     assert restored.relations[0].kind == "support"
     assert restored.units[c1].evidence[0].id == "e1"
+    assert restored.evidence_cards["e2"].confidence == 0.8

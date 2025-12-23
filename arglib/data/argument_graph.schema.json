@@ -15,6 +15,9 @@
           "type": { "type": "string" },
           "spans": { "type": "array" },
           "evidence": { "type": "array" },
+          "evidence_ids": { "type": "array", "items": { "type": "string" } },
+          "evidence_min": { "type": ["number", "null"] },
+          "evidence_max": { "type": ["number", "null"] },
           "metadata": { "type": "object" }
         }
       }
@@ -30,6 +33,51 @@
           "kind": { "type": "string" },
           "weight": { "type": ["number", "null"] },
           "rationale": { "type": ["string", "null"] },
+          "metadata": { "type": "object" }
+        }
+      }
+    },
+    "evidence_cards": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["id", "title", "supporting_doc_id", "excerpt", "confidence"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "supporting_doc_id": { "type": "string" },
+          "excerpt": { "type": "string" },
+          "confidence": { "type": "number" },
+          "metadata": { "type": ["object", "null"] }
+        }
+      }
+    },
+    "supporting_documents": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["id", "name", "type", "url"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "type": { "type": "string" },
+          "url": { "type": "string" },
+          "size": { "type": ["number", "null"] },
+          "upload_date": { "type": ["string", "null"] },
+          "uploader": { "type": ["string", "null"] },
+          "metadata": { "type": ["object", "null"] }
+        }
+      }
+    },
+    "argument_bundles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["id", "units"],
+        "properties": {
+          "id": { "type": "string" },
+          "units": { "type": "array", "items": { "type": "string" } },
+          "relations": { "type": "array" },
           "metadata": { "type": "object" }
         }
       }

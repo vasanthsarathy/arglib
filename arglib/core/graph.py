@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Literal
 
-from .evidence import EvidenceItem
+from .bundles import ArgumentBundle, ArgumentBundleGraph
+from .evidence import EvidenceCard, EvidenceItem, SupportingDocument
 from .relations import Relation
 from .spans import TextSpan
 from .units import ArgumentUnit
@@ -13,11 +14,15 @@ from .units import ArgumentUnit
 if TYPE_CHECKING:
     from arglib.semantics import DungAF
 
+
 @dataclass
 class ArgumentGraph:
     units: dict[str, ArgumentUnit] = field(default_factory=dict)
     relations: list[Relation] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
+    evidence_cards: dict[str, EvidenceCard] = field(default_factory=dict)
+    supporting_documents: dict[str, SupportingDocument] = field(default_factory=dict)
+    argument_bundles: dict[str, ArgumentBundle] = field(default_factory=dict)
 
     @classmethod
     def new(cls, title: str | None = None) -> ArgumentGraph:
@@ -34,6 +39,9 @@ class ArgumentGraph:
         spans: list[TextSpan] | None = None,
         evidence: list[EvidenceItem] | None = None,
         metadata: dict[str, Any] | None = None,
+        evidence_ids: list[str] | None = None,
+        evidence_min: float | None = None,
+        evidence_max: float | None = None,
     ) -> str:
         if claim_id is None:
             claim_id = self._next_id("c")
@@ -43,6 +51,9 @@ class ArgumentGraph:
             type=type,
             spans=list(spans or []),
             evidence=list(evidence or []),
+            evidence_ids=list(evidence_ids or []),
+            evidence_min=evidence_min,
+            evidence_max=evidence_max,
             metadata=dict(metadata or {}),
         )
         self.units[claim_id] = unit
@@ -95,11 +106,60 @@ class ArgumentGraph:
         self.units[unit_id].evidence.append(item)
         return item
 
+    def add_supporting_document(
+        self, document: SupportingDocument, *, overwrite: bool = False
+    ) -> None:
+        if document.id in self.supporting_documents and not overwrite:
+            raise ValueError(f"Supporting document already exists: {document.id}")
+        self.supporting_documents[document.id] = document
+
+    def add_evidence_card(
+        self, evidence: EvidenceCard, *, overwrite: bool = False
+    ) -> None:
+        if evidence.id in self.evidence_cards and not overwrite:
+            raise ValueError(f"Evidence card already exists: {evidence.id}")
+        self.evidence_cards[evidence.id] = evidence
+
+    def attach_evidence_card(
+        self,
+        unit_id: str,
+        evidence_id: str,
+        stance: Literal["supports", "attacks", "neutral"] = "supports",
+    ) -> EvidenceItem:
+        if unit_id not in self.units:
+            raise KeyError(f"Unknown unit id: {unit_id}")
+        if evidence_id not in self.evidence_cards:
+            raise KeyError(f"Unknown evidence card id: {evidence_id}")
+        card = self.evidence_cards[evidence_id]
+        item = EvidenceItem(
+            id=evidence_id,
+            source={"evidence_card_id": evidence_id},
+            stance=stance,
+            strength=card.confidence,
+            quality={},
+        )
+        self.units[unit_id].evidence.append(item)
+        if evidence_id not in self.units[unit_id].evidence_ids:
+            self.units[unit_id].evidence_ids.append(evidence_id)
+        return item
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "units": {unit_id: unit.to_dict() for unit_id, unit in self.units.items()},
             "relations": [relation.to_dict() for relation in self.relations],
             "metadata": self.metadata,
+            "evidence_cards": {
+                evidence_id: card.to_dict()
+                for evidence_id, card in self.evidence_cards.items()
+            },
+            "supporting_documents": {
+                doc_id: doc.to_dict()
+                for doc_id, doc in self.supporting_documents.items()
+            },
+            "argument_bundles": {
+                bundle_id: bundle.to_dict()
+                for bundle_id, bundle in self.argument_bundles.items()
+            },
         }
 
     def save(self, path: str, *, indent: int = 2) -> None:
@@ -123,7 +183,26 @@ class ArgumentGraph:
         }
         relations = [Relation.from_dict(item) for item in data.get("relations", [])]
         metadata = data.get("metadata", {})
-        return cls(units=units, relations=relations, metadata=metadata)
+        evidence_cards = {
+            evidence_id: EvidenceCard.from_dict(card)
+            for evidence_id, card in data.get("evidence_cards", {}).items()
+        }
+        supporting_documents = {
+            doc_id: SupportingDocument.from_dict(doc)
+            for doc_id, doc in data.get("supporting_documents", {}).items()
+        }
+        argument_bundles = {
+            bundle_id: ArgumentBundle.from_dict(bundle)
+            for bundle_id, bundle in data.get("argument_bundles", {}).items()
+        }
+        return cls(
+            units=units,
+            relations=relations,
+            metadata=metadata,
+            evidence_cards=evidence_cards,
+            supporting_documents=supporting_documents,
+            argument_bundles=argument_bundles,
+        )
 
     def to_dung(self, include_relations: list[str] | None = None) -> DungAF:
         from arglib.semantics import DungAF
@@ -136,6 +215,78 @@ class ArgumentGraph:
             if relation.kind in include_relations:
                 af.add_attack(relation.src, relation.dst)
         return af
+
+    def define_argument(
+        self,
+        units: list[str],
+        relations: list[Relation] | None = None,
+        bundle_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> ArgumentBundle:
+        if len(units) < 2:
+            raise ValueError("Argument bundles require at least two units.")
+        if bundle_id is None:
+            bundle_id = f"arg_{len(self.argument_bundles) + 1}"
+        if bundle_id in self.argument_bundles:
+            raise ValueError(f"Argument bundle already exists: {bundle_id}")
+        for unit_id in units:
+            if unit_id not in self.units:
+                raise KeyError(f"Unknown unit id: {unit_id}")
+        if relations is None:
+            relations = [
+                rel for rel in self.relations if rel.src in units and rel.dst in units
+            ]
+        bundle = ArgumentBundle(
+            id=bundle_id,
+            units=list(units),
+            relations=list(relations),
+            metadata=dict(metadata or {}),
+        )
+        self.argument_bundles[bundle_id] = bundle
+        return bundle
+
+    def to_argument_graph(
+        self,
+        *,
+        aggregation: str = "sum",
+        clamp: bool = True,
+    ) -> ArgumentBundleGraph:
+        bundle_lookup: dict[str, str] = {}
+        for bundle_id, bundle in self.argument_bundles.items():
+            for unit_id in bundle.units:
+                if unit_id in bundle_lookup:
+                    raise ValueError(f"Unit {unit_id} is assigned to multiple bundles.")
+                bundle_lookup[unit_id] = bundle_id
+
+        if not bundle_lookup:
+            raise ValueError("No argument bundles defined.")
+
+        edge_scores: dict[tuple[str, str], list[float]] = {}
+        for relation in self.relations:
+            src_bundle = bundle_lookup.get(relation.src)
+            dst_bundle = bundle_lookup.get(relation.dst)
+            if not src_bundle or not dst_bundle or src_bundle == dst_bundle:
+                continue
+            signed = _signed_weight(relation)
+            edge_scores.setdefault((src_bundle, dst_bundle), []).append(signed)
+
+        bundle_relations: list[Relation] = []
+        for (src_bundle, dst_bundle), weights in edge_scores.items():
+            aggregated = _aggregate_weights(weights, aggregation)
+            if clamp:
+                aggregated = max(-1.0, min(1.0, aggregated))
+            kind: Literal["support", "attack"] = (
+                "support" if aggregated >= 0 else "attack"
+            )
+            bundle_relations.append(
+                Relation(src=src_bundle, dst=dst_bundle, kind=kind, weight=aggregated)
+            )
+
+        return ArgumentBundleGraph(
+            bundles=self.argument_bundles,
+            relations=bundle_relations,
+            metadata={"aggregation": aggregation, "clamp": clamp},
+        )
 
     def diagnostics(self) -> dict[str, Any]:
         from arglib.algorithms import (
@@ -218,3 +369,32 @@ class ArgumentGraph:
                 if suffix.isdigit():
                     max_id = max(max_id, int(suffix))
         return f"{prefix}{max_id + 1}"
+
+
+def _signed_weight(relation: Relation) -> float:
+    if relation.weight is None:
+        base = 1.0
+    else:
+        base = relation.weight
+    if relation.kind == "support":
+        return base
+    return -abs(base)
+
+
+def _aggregate_weights(weights: list[float], aggregation: str) -> float:
+    if not weights:
+        return 0.0
+    aggregation = aggregation.lower()
+    if aggregation == "sum":
+        return sum(weights)
+    if aggregation == "mean":
+        return sum(weights) / len(weights)
+    if aggregation == "max":
+        return max(weights, key=abs)
+    if aggregation == "softmax":
+        exp_weights = [pow(2.718281828, abs(w)) for w in weights]
+        total = sum(exp_weights)
+        if total == 0:
+            return 0.0
+        return sum(w * ew for w, ew in zip(weights, exp_weights, strict=False)) / total
+    raise ValueError(f"Unknown aggregation mode: {aggregation}")
