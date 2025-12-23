@@ -49,3 +49,16 @@ def test_cli_aba(tmp_path, capsys):
     result = json.loads(captured.out)
     assert exit_code == 0
     assert result["extensions"]
+
+
+def test_cli_validate(tmp_path, capsys):
+    graph = ArgumentGraph.new()
+    graph.add_claim("A")
+    path = tmp_path / "graph.json"
+    save(path, graph)
+
+    exit_code = main(["validate", str(path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert captured.out.strip() == "OK"

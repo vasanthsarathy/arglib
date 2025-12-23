@@ -18,3 +18,9 @@ uv run python -m pip install -i https://test.pypi.org/simple/ arglib
 
 ## Versioning
 Update the version in `pyproject.toml` before tagging a release.
+
+## v0.1 Release Checklist
+1. Update version in `pyproject.toml` and `arglib/__init__.py`.
+2. Run `scripts/check.sh`.
+3. Run the `TestPyPI` workflow and install from TestPyPI.
+4. Tag and create a GitHub Release (for example `v0.1.0`).
