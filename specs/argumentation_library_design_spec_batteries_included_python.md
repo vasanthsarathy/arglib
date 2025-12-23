@@ -416,18 +416,43 @@ arglib/
 
 ---
 
+# Design Decisions (Open/Proposed)
+These are areas that need explicit choices as we scale beyond v0.1. Proposed defaults are included.
+
+## Evidence scoring location
+- **Open**: store evidence strength on `EvidenceItem`, on `EvidenceCard`, or both.
+- **Proposed**: treat `EvidenceCard.confidence` as the canonical evidence score and sync into `EvidenceItem.strength` when evidence is attached to a claim (so both are available for propagation and export).
+
+## Edge validation + weights
+- **Open**: should edge weights be separate from LLM confidence, or derived directly?
+- **Proposed**: keep `Relation.weight` as the canonical edge weight (for propagation/graph algorithms) and store LLM confidence in `Relation.metadata["confidence"]` plus reasoning in `Relation.rationale`.
+
+## Claim graph vs. argument graph projection
+- **Open**: how to aggregate support/attack across `ArgumentBundle` boundaries.
+- **Proposed**: sum signed weights across cross-bundle edges and then clamp to [-1, 1]. Provide alternate aggregation modes (mean, max, softmax) in API.
+
+## BipolarAF timing
+- **Open**: when to formalize `BipolarAF` as a first-class projection.
+- **Proposed**: add `BipolarAF` in v0.2 alongside ABA dispute trees, using support edges as positive influences and attack edges as negative influences.
+
+## Evidence score ranges
+- **Open**: standardize evidence/edge scores to [-1, 1] or [0, 1].
+- **Proposed**: use [-1, 1] for support/attack confidence and keep [0, 1] for quality/reliability sub-scores in `EvidenceItem.quality`.
+
+---
+
 # Versioned Milestones
 ## v0.1 (Core)
 - `ArgumentGraph` + IO JSON + Graphviz render
 - Dung AF conversion + grounded/preferred/stable
 - Basic diagnostics (cycles, components)
- - CLI validation + docs scaffolding
+- CLI validation + docs scaffolding
 
 ## v0.2 (ABA)
 - ABA framework + at least one solver path (AF translation or direct)
 - Explanations (defense chains / dispute trees)
 - Edge validation + evidence scoring + credibility propagation
- - Argument bundling (argument = subgraph) + projection to argument graph
+- Argument bundling (argument = subgraph) + projection to argument graph
 
 ## v0.3 (Batteries)
 - Argument miner baseline (open-weight) + caching
@@ -439,11 +464,11 @@ arglib/
 ## v0.4 (Multimodal)
 - Evidence extractors for PDF/image (chunking + linking)
 - Graph provenance enhancements
- - Evidence card + supporting document pipelines
+- Evidence card + supporting document pipelines
 
 ## v1.0
 - Stable API, docs, tutorials, benchmark scripts, model cards
- - Integrations (LangChain/LlamaIndex), evaluation harness, and reporting
+- Integrations (LangChain/LlamaIndex), evaluation harness, and reporting
 
 ---
 
