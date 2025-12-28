@@ -7,6 +7,7 @@ from typing import Any
 
 from arglib.core import ArgumentGraph
 from arglib.reasoning.credibility import compute_credibility
+from arglib.semantics.aba import enumerate_dispute_trees
 
 
 class Reasoner:
@@ -41,6 +42,13 @@ class Reasoner:
                     "initial_evidence": credibility.initial_evidence,
                     "final_scores": credibility.final_scores,
                 }
+            elif task_key == "aba_dispute_trees":
+                aba = self.graph.metadata.get("aba_framework")
+                if aba is None:
+                    raise ValueError(
+                        "ABA framework not found in graph.metadata['aba_framework']."
+                    )
+                results[task] = enumerate_dispute_trees(aba, sorted(aba.assumptions))
             else:
                 raise ValueError(f"Unsupported task: {task}")
 
