@@ -15,6 +15,7 @@ ArgLib is a batteries-included Python library for creating, importing, analyzing
 - JSON IO with schema validation and Graphviz DOT export.
 - CLI tools for DOT, diagnostics, validation, and ABA.
 - Argument bundles for higher-level reasoning and credibility propagation scoring.
+- Deterministic evidence scoring and edge validation helpers (LLM adapters planned).
 
 ## Install
 ```bash

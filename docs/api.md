@@ -18,6 +18,10 @@ This is a lightweight overview of the public API. Full API documentation will ex
 - `Reasoner`: unified reasoning entrypoint (`arglib/reasoning/reasoner.py`)
 - `compute_credibility`: evidence + edge propagation scoring (`arglib/reasoning/credibility.py`)
 
+## AI Evaluation
+- `score_evidence` and `validate_edges` provide deterministic evaluation helpers.
+- `HeuristicEvaluator` is a baseline; LLM adapters can swap in later.
+
 ## I/O
 - `dumps`/`loads`: JSON serialization (`arglib/io/json.py`)
 - `validate_graph_payload`: minimal validation (`arglib/io/schema.py`)
