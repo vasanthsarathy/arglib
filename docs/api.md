@@ -25,8 +25,10 @@ This is a lightweight overview of the public API. Full API documentation will ex
 - `HeuristicEvaluator` is a baseline; LLM adapters can swap in later.
 
 ## Mining
+- `ArgumentMiner`, `SimpleArgumentMiner`, and `LongDocumentMiner` for extraction pipelines.
 - `Splitter`, `ParagraphSplitter`, `FixedWindowSplitter` for long-document chunking.
 - `MergePolicy` and `SimpleGraphReconciler` for merging per-segment graphs.
+- `token_jaccard_similarity` as a simple dedup/coreference heuristic.
 
 ## I/O
 - `dumps`/`loads`: JSON serialization (`arglib/io/json.py`)

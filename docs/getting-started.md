@@ -90,11 +90,8 @@ trees = aba.dispute_trees()
 
 ## Long-document mining workflow
 ```python
-from arglib.ai import ParagraphSplitter, SimpleGraphReconciler
+from arglib.ai import LongDocumentMiner, SimpleArgumentMiner
 
-segments = ParagraphSplitter().split(text)
-graphs = [ArgumentGraph.new() for _ in segments]
-
-reconciler = SimpleGraphReconciler()
-merged = reconciler.reconcile(segments, graphs)
+miner = LongDocumentMiner(miner=SimpleArgumentMiner())
+graph = miner.parse(text, doc_id="doc-1")
 ```

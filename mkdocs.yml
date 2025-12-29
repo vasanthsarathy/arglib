@@ -25,6 +25,7 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Tutorials: tutorials.md
+  - Long-Document Mining: long-doc-mining.md
   - Contributing: contributing.md
   - Roadmap: roadmap.md
   - API Reference: api.md

@@ -7,10 +7,10 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal, Protocol
 
+from arglib.core import ArgumentGraph, ArgumentUnit, Relation
+
 RelationKind = Literal["support", "attack", "undercut", "rebut"]
 RelationKey = tuple[str, str, RelationKind]
-
-from arglib.core import ArgumentGraph, ArgumentUnit, Relation
 
 
 @dataclass(frozen=True)
@@ -20,6 +20,18 @@ class Segment:
     start: int
     end: int
     metadata: dict[str, Any] = field(default_factory=dict)
+
+
+def token_jaccard_similarity(left: str, right: str) -> float:
+    left_tokens = set(re.findall(r"[a-zA-Z0-9]+", left.lower()))
+    right_tokens = set(re.findall(r"[a-zA-Z0-9]+", right.lower()))
+    if not left_tokens and not right_tokens:
+        return 1.0
+    if not left_tokens or not right_tokens:
+        return 0.0
+    intersection = left_tokens & right_tokens
+    union = left_tokens | right_tokens
+    return len(intersection) / len(union)
 
 
 class Splitter(Protocol):
@@ -91,6 +103,8 @@ class FixedWindowSplitter:
 class MergePolicy:
     unit_key: Callable[[ArgumentUnit], str] | None = None
     relation_aggregation: Literal["sum", "max", "mean"] = "sum"
+    similarity_fn: Callable[[str, str], float] | None = None
+    similarity_threshold: float = 0.9
     clamp_weights: bool = True
     weight_min: float = -1.0
     weight_max: float = 1.0
@@ -99,6 +113,20 @@ class MergePolicy:
         if self.unit_key is not None:
             return self.unit_key(unit)
         return unit.text.strip().lower()
+
+    def match_existing_key(self, key: str, existing: Sequence[str]) -> str | None:
+        if not self.similarity_fn:
+            return None
+        best_key: str | None = None
+        best_score = 0.0
+        for candidate in existing:
+            score = self.similarity_fn(key, candidate)
+            if score > best_score:
+                best_score = score
+                best_key = candidate
+        if best_key is not None and best_score >= self.similarity_threshold:
+            return best_key
+        return None
 
     def aggregate_weights(self, weights: list[float]) -> float:
         if not weights:
@@ -172,6 +200,44 @@ class SimpleGraphReconciler:
             for unit_id, unit in graph.units.items():
                 key = self.policy.key_for_unit(unit)
                 if key not in unit_key_to_id:
+                    match = self.policy.match_existing_key(
+                        key, list(unit_key_to_id.keys())
+                    )
+                else:
+                    match = None
+
+                if match is not None:
+                    new_id = unit_key_to_id[match]
+                    existing = merged.units[new_id]
+                    existing.spans.extend(unit.spans)
+                    existing.evidence.extend(unit.evidence)
+                    for evidence_id in unit.evidence_ids:
+                        if evidence_id not in existing.evidence_ids:
+                            existing.evidence_ids.append(evidence_id)
+                    existing.metadata.setdefault("source_unit_ids", []).append(unit_id)
+                    similarity_fn = self.policy.similarity_fn
+                    if similarity_fn is not None:
+                        existing.metadata.setdefault("merge_matches", []).append(
+                            {"key": key, "score": similarity_fn(key, match)}
+                        )
+                    if segment.id not in unit_segments[new_id]:
+                        unit_segments[new_id].append(segment.id)
+                    if unit.evidence_min is not None:
+                        existing.evidence_min = (
+                            unit.evidence_min
+                            if existing.evidence_min is None
+                            else min(existing.evidence_min, unit.evidence_min)
+                        )
+                    if unit.evidence_max is not None:
+                        existing.evidence_max = (
+                            unit.evidence_max
+                            if existing.evidence_max is None
+                            else max(existing.evidence_max, unit.evidence_max)
+                        )
+                    unit_map[unit_id] = new_id
+                    continue
+
+                if key not in unit_key_to_id:
                     new_id = merged.add_claim(
                         unit.text,
                         type=unit.type,
@@ -238,9 +304,9 @@ class SimpleGraphReconciler:
                     merged.relations.append(merged_relation)
                     relation_map[relation_key] = merged_relation
                 else:
-                    relation_map[relation_key].metadata.setdefault("sources", []).append(
-                        {"segment_id": segment.id}
-                    )
+                    relation_map[relation_key].metadata.setdefault(
+                        "sources", []
+                    ).append({"segment_id": segment.id})
 
         for relation_key, relation in relation_map.items():
             relation.weight = self.policy.aggregate_weights(

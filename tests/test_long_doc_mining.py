@@ -1,4 +1,10 @@
-from arglib.ai import FixedWindowSplitter, ParagraphSplitter, SimpleGraphReconciler
+from arglib.ai import (
+    FixedWindowSplitter,
+    MergePolicy,
+    ParagraphSplitter,
+    SimpleGraphReconciler,
+    token_jaccard_similarity,
+)
 from arglib.core import ArgumentGraph
 
 
@@ -53,3 +59,23 @@ def test_simple_graph_reconciler_merges_units_and_edges():
     support_key = next(key for key in relation_keys if key[2] == "support")
     assert relation_keys[support_key].weight == 1.0
     assert len(result.relation_sources[support_key]) == 2
+
+
+def test_similarity_merge_policy():
+    g1 = ArgumentGraph.new()
+    a1 = g1.add_claim("Cats are good.")
+
+    g2 = ArgumentGraph.new()
+    a2 = g2.add_claim("Cats are very good.")
+
+    segments = ParagraphSplitter().split("Cats are good.\n\nCats are very good.")
+    policy = MergePolicy(
+        similarity_fn=token_jaccard_similarity,
+        similarity_threshold=0.6,
+    )
+    reconciler = SimpleGraphReconciler(policy=policy)
+    result = reconciler.reconcile(segments, [g1, g2])
+
+    assert len(result.graph.units) == 1
+    merged_unit = next(iter(result.graph.units.values()))
+    assert sorted(merged_unit.metadata["source_unit_ids"]) == sorted([a1, a2])
