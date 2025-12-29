@@ -24,6 +24,10 @@ This is a lightweight overview of the public API. Full API documentation will ex
 - `score_evidence` and `validate_edges` provide deterministic evaluation helpers.
 - `HeuristicEvaluator` is a baseline; LLM adapters can swap in later.
 
+## Mining
+- `Splitter`, `ParagraphSplitter`, `FixedWindowSplitter` for long-document chunking.
+- `MergePolicy` and `SimpleGraphReconciler` for merging per-segment graphs.
+
 ## I/O
 - `dumps`/`loads`: JSON serialization (`arglib/io/json.py`)
 - `validate_graph_payload`: minimal validation (`arglib/io/schema.py`)
