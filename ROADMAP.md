@@ -14,7 +14,7 @@ This file mirrors `docs/roadmap.md` for quick reference in the repo root.
 - Evidence scoring and edge validation with confidence.
 - Credibility propagation (evidence + network influence).
 - Argument bundling: argument = subgraph; bundle graph projection.
-Current status: bundling + credibility propagation complete; dispute trees and edge validation pending.
+Current status: dispute trees, evidence scoring/edge validation, and bundling/credibility propagation complete.
 
 ## v0.3 (AI/mining + datasets)
 - Argument mining pipeline: ADU extraction, relations, claim types, alignment.
@@ -22,12 +22,13 @@ Current status: bundling + credibility propagation complete; dispute trees and e
 - Pattern bank + matcher + fallacy detection.
 - Graph-first dataset generator + linguistic style augmentation.
 - Dataset stats and pattern classification utilities.
-- Long-document mining: chunking, per-chunk graphs, and graph merging.
+- Long-document mining: chunking, per-chunk graphs, reconciliation, and graph merging.
 
 ## v0.4 (Multimodal + provenance)
 - Evidence extraction for PDF/image/video with provenance.
 - Supporting document + evidence card pipelines.
 - Multimodal alignment into `TextSpan`/evidence attachments.
+Current status: supporting documents + evidence cards implemented; multimodal extractors pending.
 
 ## v1.0 (stable API + integrations)
 - API freeze, docs, tutorials, benchmarks, model cards.

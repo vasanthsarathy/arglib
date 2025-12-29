@@ -33,6 +33,7 @@ Design/workflow projects
    - Text → ADUs + relations (+ claim type) + alignment.
    - Multimodal evidence → extracted snippets/frames/regions linked to nodes.
    - Long-document mining: configurable chunking, per-chunk graphs, and graph merging.
+   - Graph reconciliation: deduplicate claims, resolve cross-chunk coreference, and merge edges with provenance.
 5. **Quality & critique**:
    - Missing assumptions, implicit premises, fallacy/pattern detection, circularity.
    - Coherence metrics and structural diagnostics.
@@ -212,6 +213,16 @@ Subtasks:
 4. Claim type classification
 5. Alignment (node ↔ text spans)
 
+### Long-document mining pipeline
+1. Split documents into segments (by tokens/sections/paragraphs/custom).
+2. Mine each segment into a subgraph with local provenance.
+3. Reconcile across segments:
+   - merge duplicate or coreferent claims,
+   - unify evidence cards and sources,
+   - merge or aggregate edges with provenance.
+4. Emit a unified graph + mapping back to source segments.
+Expose `Splitter`, `GraphReconciler`, and `MergePolicy` interfaces so users can customize behavior.
+
 ### Assumption generation
 ```python
 assumptions = AssumptionGenerator(model="arglib/assumptions-small")
@@ -242,6 +253,7 @@ assumptions.suggest(G, edge=("c1","c2"), k=3)
 ## Construct graphs manually
 ```python
 from arglib import ArgumentGraph
+from arglib.core import EvidenceCard, SupportingDocument
 
 G = ArgumentGraph.new(title="Example")
 
@@ -249,7 +261,22 @@ c1 = G.add_claim("Green spaces reduce urban heat.", type="fact")
 c2 = G.add_claim("Cities should fund parks.", type="policy")
 
 G.add_support(c1, c2, weight=0.7, rationale="Cooling improves health")
-G.attach_evidence(c1, doc_id="paper.pdf", page=3, quote="...", stance="supports")
+doc = SupportingDocument(
+  id="doc-1",
+  name="paper.pdf",
+  type="pdf",
+  url="https://example.com/paper.pdf",
+)
+G.add_supporting_document(doc)
+card = EvidenceCard(
+  id="ev-1",
+  title="Evidence excerpt",
+  supporting_doc_id=doc.id,
+  excerpt="Cooling improves health outcomes.",
+  confidence=0.7,
+)
+G.add_evidence_card(card)
+G.attach_evidence_card(c1, card.id)
 ```
 
 ## Convert to formal frameworks
@@ -432,6 +459,11 @@ These choices are fixed unless explicitly revised.
 - Aggregate cross-bundle edges by summing signed weights and clamping to [-1, 1].
 - Provide alternate aggregation modes (mean, max, softmax) in API.
 
+## Claim vs. argument abstraction
+- Claims are the canonical nodes in `ArgumentGraph`.
+- Arguments are defined as bundles of claims (connected subgraphs).
+- Formal AF nodes can map to bundles (argument-level) or claims (claim-level) depending on projection.
+
 ## BipolarAF timing
 - `BipolarAF` becomes first-class in v0.2 alongside ABA dispute trees.
 - Support edges are positive influences; attack edges are negative influences.
@@ -490,4 +522,10 @@ These choices are fixed unless explicitly revised.
 - How to represent **argument schemes** (Walton-style) vs pure support/attack
 - Weighted semantics: keep separate from formal AAF/ABA or integrate
 - Model distribution: bundled weights vs optional download
+
+   - Graph reconciliation: deduplicate claims, resolve cross-chunk coreference, and merge edges with provenance.
+
+
+
+
 
