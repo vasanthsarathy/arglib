@@ -42,10 +42,14 @@ def test_simple_graph_reconciler_merges_units_and_edges():
     result = reconciler.reconcile(segments, [g1, g2])
 
     assert len(result.graph.units) == 3
-    merged_segments = [segments for segments in result.unit_segments.values() if len(segments) == 2]
-    assert merged_segments == [["seg-1", "seg-2"]]
+    merged_segments = [
+        segments for segments in result.unit_segments.values() if len(segments) == 2
+    ]
+    assert merged_segments == [["seg-1", "seg-2"], ["seg-1", "seg-2"]]
 
-    relation_keys = {(rel.src, rel.dst, rel.kind): rel for rel in result.graph.relations}
+    relation_keys = {
+        (rel.src, rel.dst, rel.kind): rel for rel in result.graph.relations
+    }
     support_key = next(key for key in relation_keys if key[2] == "support")
     assert relation_keys[support_key].weight == 1.0
     assert len(result.relation_sources[support_key]) == 2

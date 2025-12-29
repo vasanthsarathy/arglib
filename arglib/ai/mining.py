@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Literal, Protocol, Sequence
+from typing import Any, Literal, Protocol
 
-from arglib.core import ArgumentGraph, ArgumentUnit, EvidenceCard, Relation, SupportingDocument
+RelationKind = Literal["support", "attack", "undercut", "rebut"]
+RelationKey = tuple[str, str, RelationKind]
+
+from arglib.core import ArgumentGraph, ArgumentUnit, Relation
 
 
 @dataclass(frozen=True)
@@ -114,7 +118,7 @@ class MergePolicy:
 class MergeResult:
     graph: ArgumentGraph
     unit_segments: dict[str, list[str]]
-    relation_sources: dict[tuple[str, str, str], list[dict[str, Any]]]
+    relation_sources: dict[RelationKey, list[dict[str, Any]]]
 
 
 class GraphReconciler(Protocol):
@@ -144,12 +148,12 @@ class SimpleGraphReconciler:
 
         unit_segments: dict[str, list[str]] = {}
         unit_key_to_id: dict[str, str] = {}
-        relation_sources: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
-        relation_weights: dict[tuple[str, str, str], list[float]] = {}
-        relation_map: dict[tuple[str, str, str], Relation] = {}
+        relation_sources: dict[RelationKey, list[dict[str, Any]]] = {}
+        relation_weights: dict[RelationKey, list[float]] = {}
+        relation_map: dict[RelationKey, Relation] = {}
         conflicts: list[dict[str, Any]] = []
 
-        for segment, graph in zip(segments, graphs):
+        for segment, graph in zip(segments, graphs, strict=True):
             for doc_id, doc in graph.supporting_documents.items():
                 if doc_id in merged.supporting_documents:
                     if merged.supporting_documents[doc_id].to_dict() != doc.to_dict():
@@ -178,9 +182,9 @@ class SimpleGraphReconciler:
                         evidence_min=unit.evidence_min,
                         evidence_max=unit.evidence_max,
                     )
-                    merged.units[new_id].metadata.setdefault("source_unit_ids", []).append(
-                        unit_id
-                    )
+                    merged.units[new_id].metadata.setdefault(
+                        "source_unit_ids", []
+                    ).append(unit_id)
                     unit_key_to_id[key] = new_id
                     unit_segments[new_id] = [segment.id]
                 else:
@@ -213,13 +217,13 @@ class SimpleGraphReconciler:
                 dst = unit_map.get(relation.dst)
                 if src is None or dst is None:
                     continue
-                key = (src, dst, relation.kind)
+                relation_key: RelationKey = (src, dst, relation.kind)
                 weight = 1.0 if relation.weight is None else relation.weight
-                relation_weights.setdefault(key, []).append(weight)
-                relation_sources.setdefault(key, []).append(
+                relation_weights.setdefault(relation_key, []).append(weight)
+                relation_sources.setdefault(relation_key, []).append(
                     {"segment_id": segment.id, "relation": relation.to_dict()}
                 )
-                if key not in relation_map:
+                if relation_key not in relation_map:
                     merged_relation = Relation(
                         src=src,
                         dst=dst,
@@ -232,14 +236,16 @@ class SimpleGraphReconciler:
                         {"segment_id": segment.id}
                     )
                     merged.relations.append(merged_relation)
-                    relation_map[key] = merged_relation
+                    relation_map[relation_key] = merged_relation
                 else:
-                    relation_map[key].metadata.setdefault("sources", []).append(
+                    relation_map[relation_key].metadata.setdefault("sources", []).append(
                         {"segment_id": segment.id}
                     )
 
-        for key, relation in relation_map.items():
-            relation.weight = self.policy.aggregate_weights(relation_weights.get(key, []))
+        for relation_key, relation in relation_map.items():
+            relation.weight = self.policy.aggregate_weights(
+                relation_weights.get(relation_key, [])
+            )
 
         if conflicts:
             merged.metadata["merge_conflicts"] = conflicts

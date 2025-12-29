@@ -92,3 +92,22 @@ from arglib.ai import score_evidence, validate_edges
 scores = score_evidence(graph)
 edge_report = validate_edges(graph)
 ```
+
+## Long-document mining (split + reconcile)
+```python
+from arglib.ai import ParagraphSplitter, SimpleGraphReconciler
+
+splitter = ParagraphSplitter()
+segments = splitter.split(long_text)
+
+# Mine each segment into a graph (placeholder for a real miner).
+graphs = []
+for segment in segments:
+    g = ArgumentGraph.new()
+    claim_id = g.add_claim(segment.text)
+    graphs.append(g)
+
+reconciler = SimpleGraphReconciler()
+merged = reconciler.reconcile(segments, graphs)
+graph = merged.graph
+```

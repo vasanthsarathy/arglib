@@ -87,3 +87,14 @@ aba.add_contrary("a", "not_a")
 aba.add_rule("b", ["a"])
 trees = aba.dispute_trees()
 ```
+
+## Long-document mining workflow
+```python
+from arglib.ai import ParagraphSplitter, SimpleGraphReconciler
+
+segments = ParagraphSplitter().split(text)
+graphs = [ArgumentGraph.new() for _ in segments]
+
+reconciler = SimpleGraphReconciler()
+merged = reconciler.reconcile(segments, graphs)
+```
