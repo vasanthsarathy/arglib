@@ -1,4 +1,10 @@
+import asyncio
+
 from arglib.ai import (
+    AsyncArgumentMinerAdapter,
+    AsyncLLMHook,
+    AsyncLongDocumentMiner,
+    AsyncNoOpLLMClient,
     HookedArgumentMiner,
     LLMHook,
     LongDocumentMiner,
@@ -61,3 +67,22 @@ def test_long_document_miner_uses_splitter_hook():
     graph = miner.parse("Alpha Beta", doc_id="doc-4")
 
     assert len(graph.units) == 1
+
+
+def test_async_long_document_miner_uses_splitter_hook():
+    async def run() -> int:
+        client = AsyncNoOpLLMClient(
+            response='[{"id": "seg-1", "text": "Alpha", "start": 0, "end": 5}]'
+        )
+        hook = AsyncLLMHook(
+            client=client,
+            template=PromptTemplate(system="sys", user="{input}"),
+        )
+        miner = AsyncLongDocumentMiner(
+            miner=AsyncArgumentMinerAdapter(SimpleArgumentMiner()),
+            splitter_hook=hook,
+        )
+        graph = await miner.parse("Alpha Beta", doc_id="doc-5")
+        return len(graph.units)
+
+    assert asyncio.run(run()) == 1

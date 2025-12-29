@@ -7,9 +7,21 @@ from .evaluation import (
     score_evidence,
     validate_edges,
 )
-from .llm import LLMClient, LLMHook, NoOpLLMClient, PromptTemplate
+from .llm import (
+    AsyncLLMClient,
+    AsyncLLMHook,
+    AsyncNoOpLLMClient,
+    LLMClient,
+    LLMHook,
+    NoOpLLMClient,
+    OllamaClient,
+    PromptTemplate,
+)
 from .miner import (
     ArgumentMiner,
+    AsyncArgumentMiner,
+    AsyncArgumentMinerAdapter,
+    AsyncLongDocumentMiner,
     HookedArgumentMiner,
     LongDocumentMiner,
     Segmenter,
@@ -29,6 +41,12 @@ from .mining import (
 
 __all__ = [
     "ArgumentMiner",
+    "AsyncArgumentMiner",
+    "AsyncArgumentMinerAdapter",
+    "AsyncLLMClient",
+    "AsyncLLMHook",
+    "AsyncNoOpLLMClient",
+    "AsyncLongDocumentMiner",
     "EdgeValidationResult",
     "EvidenceEvaluation",
     "HeuristicEvaluator",
@@ -41,6 +59,7 @@ __all__ = [
     "MergePolicy",
     "MergeResult",
     "NoOpLLMClient",
+    "OllamaClient",
     "ParagraphSplitter",
     "PromptTemplate",
     "Segment",

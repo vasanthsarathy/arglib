@@ -29,7 +29,9 @@ This is a lightweight overview of the public API. Full API documentation will ex
 - `Splitter`, `ParagraphSplitter`, `FixedWindowSplitter` for long-document chunking.
 - `MergePolicy` and `SimpleGraphReconciler` for merging per-segment graphs.
 - `token_jaccard_similarity` as a simple dedup/coreference heuristic.
-- `LLMClient` and `LLMHook` to plug in model-backed parsing or splitting.
+- `LLMClient`/`LLMHook` and async variants for model-backed parsing or splitting.
+- `OllamaClient` for local model inference.
+- `AsyncArgumentMinerAdapter` to wrap sync miners for async pipelines.
 
 ## I/O
 - `dumps`/`loads`: JSON serialization (`arglib/io/json.py`)

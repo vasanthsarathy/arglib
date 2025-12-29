@@ -50,6 +50,26 @@ miner = HookedArgumentMiner(hook=hook)
 graph = miner.parse("Some text")
 ```
 
+## Async mining with sync adapters
+```python
+from arglib.ai import AsyncArgumentMinerAdapter, AsyncLongDocumentMiner, SimpleArgumentMiner
+
+async_miner = AsyncArgumentMinerAdapter(SimpleArgumentMiner())
+miner = AsyncLongDocumentMiner(miner=async_miner)
+```
+
+## Ollama local models
+```python
+from arglib.ai import HookedArgumentMiner, LLMHook, OllamaClient, PromptTemplate
+
+hook = LLMHook(
+    client=OllamaClient(model="llama3.1"),
+    template=PromptTemplate(system="Return graph JSON.", user="{input}"),
+)
+miner = HookedArgumentMiner(hook=hook)
+graph = miner.parse("Some text")
+```
+
 ## Deduplication and coreference hints
 `MergePolicy` lets you control how claims are deduplicated. The default matches
 lowercased text. You can add a similarity function:
