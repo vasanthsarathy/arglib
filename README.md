@@ -15,6 +15,7 @@ ArgLib is a batteries-included Python library for creating, importing, analyzing
 - JSON IO with schema validation and Graphviz DOT export.
 - CLI tools for DOT, diagnostics, validation, and ABA.
 - Argument bundles for higher-level reasoning and credibility propagation scoring.
+- Evidence cards and supporting documents for evidence pipelines.
 - Deterministic evidence scoring and edge validation helpers (LLM adapters planned).
 
 ## Install
@@ -34,6 +35,22 @@ graph.add_support(c1, c2, rationale="Cooling improves health")
 
 reasoner = Reasoner(graph)
 results = reasoner.run(["grounded_extension", "grounded_labeling"])
+```
+
+## Evidence and scoring
+```python
+from arglib.ai import score_evidence, validate_edges
+
+scores = score_evidence(graph)
+edge_report = validate_edges(graph)
+```
+
+## Bundles and credibility propagation
+```python
+from arglib.reasoning import compute_credibility
+
+bundle = graph.define_argument([c1, c2], bundle_id="arg-1")
+cred = compute_credibility(graph)
 ```
 
 ## CLI examples

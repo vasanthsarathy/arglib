@@ -32,3 +32,63 @@ from arglib.viz import to_dot
 dot = to_dot(graph)
 print(dot)
 ```
+
+## Define an argument bundle (argument-as-subgraph)
+```python
+bundle = graph.define_argument(
+    [c1, c2],
+    bundle_id="arg-1",
+    metadata={"source": "doc-1"},
+)
+arg_graph = graph.to_argument_graph()
+```
+
+## Attach evidence cards and supporting documents
+```python
+from arglib.core import EvidenceCard, SupportingDocument
+
+document = SupportingDocument(
+    id="doc-1",
+    name="Policy Report",
+    type="pdf",
+    url="https://example.com/policy.pdf",
+)
+graph.add_supporting_document(document)
+card = EvidenceCard(
+    id="ev-1",
+    title="Evidence summary text.",
+    supporting_doc_id=document.id,
+    excerpt="Key finding...",
+    confidence=0.6,
+    metadata={"source_type": "report", "method": "expert"},
+)
+graph.add_evidence_card(card)
+graph.attach_evidence_card(c1, card.id)
+```
+
+## Propagate credibility
+```python
+from arglib.reasoning import compute_credibility
+
+cred = compute_credibility(graph)
+print(cred.final_scores)
+```
+
+## ABA dispute trees
+```python
+from arglib.semantics.aba import ABAFramework
+
+aba = ABAFramework()
+aba.add_assumption("a")
+aba.add_contrary("a", "not_a")
+aba.add_rule("b", ["a"])
+trees = aba.dispute_trees()
+```
+
+## AI evaluation helpers
+```python
+from arglib.ai import score_evidence, validate_edges
+
+scores = score_evidence(graph)
+edge_report = validate_edges(graph)
+```

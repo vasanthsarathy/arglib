@@ -9,10 +9,12 @@ This is a lightweight overview of the public API. Full API documentation will ex
     - `ArgumentGraph.render(path, engine="graphviz")` writes DOT output.
 - `EvidenceCard` and `SupportingDocument` for evidence pipelines.
 - `ArgumentBundle` and `ArgumentBundleGraph` for argument-as-subgraph abstraction.
+    - `ArgumentGraph.define_argument(...)` and `to_argument_graph()` project bundles.
 
 ## Semantics
 - `DungAF`: Dung-style abstract argumentation framework (`arglib/semantics/dung.py`)
 - `ABAFramework`: minimal ABA scaffolding (`arglib/semantics/aba/framework.py`)
+    - `ABAFramework.dispute_trees()` for dispute tree generation.
 
 ## Reasoning
 - `Reasoner`: unified reasoning entrypoint (`arglib/reasoning/reasoner.py`)
