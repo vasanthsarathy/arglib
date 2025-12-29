@@ -24,6 +24,7 @@ dev = [
   "ruff",
   "mypy",
   "pypdf>=6.5.0",
+  "ollama-python>=0.1.2",
 ]
 
 [tool.setuptools.packages.find]

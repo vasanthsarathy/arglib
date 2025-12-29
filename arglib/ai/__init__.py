@@ -8,6 +8,7 @@ from .evaluation import (
     validate_edges,
 )
 from .llm import (
+    AnthropicClient,
     AsyncLLMClient,
     AsyncLLMHook,
     AsyncNoOpLLMClient,
@@ -15,6 +16,7 @@ from .llm import (
     LLMHook,
     NoOpLLMClient,
     OllamaClient,
+    OpenAIClient,
     PromptTemplate,
 )
 from .miner import (
@@ -46,6 +48,7 @@ __all__ = [
     "AsyncLLMClient",
     "AsyncLLMHook",
     "AsyncNoOpLLMClient",
+    "AnthropicClient",
     "AsyncLongDocumentMiner",
     "EdgeValidationResult",
     "EvidenceEvaluation",
@@ -60,6 +63,7 @@ __all__ = [
     "MergeResult",
     "NoOpLLMClient",
     "OllamaClient",
+    "OpenAIClient",
     "ParagraphSplitter",
     "PromptTemplate",
     "Segment",

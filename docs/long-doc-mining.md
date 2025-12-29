@@ -70,6 +70,8 @@ miner = HookedArgumentMiner(hook=hook)
 graph = miner.parse("Some text")
 ```
 
+The Ollama client uses `ollama-python` if available, with an HTTP fallback.
+
 ## Deduplication and coreference hints
 `MergePolicy` lets you control how claims are deduplicated. The default matches
 lowercased text. You can add a similarity function:

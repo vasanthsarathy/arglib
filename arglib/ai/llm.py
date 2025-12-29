@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from typing import Any, Protocol
 from urllib.error import HTTPError, URLError
@@ -74,6 +75,127 @@ class AsyncNoOpLLMClient:
 
 
 @dataclass
+class OpenAIClient:
+    model: str
+    api_key: str | None = None
+    base_url: str = "https://api.openai.com/v1"
+    timeout: float = 30.0
+    options: dict[str, Any] | None = None
+
+    def complete(self, prompt: str, *, metadata: dict[str, Any] | None = None) -> str:
+        payload = self._build_payload(prompt, metadata=metadata)
+        request = Request(
+            f"{self.base_url}/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers=self._headers(),
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=self.timeout) as response:
+                body = response.read().decode("utf-8")
+        except (HTTPError, URLError) as exc:
+            raise RuntimeError(f"OpenAI request failed: {exc}") from exc
+        return _parse_openai_response(body)
+
+    def _headers(self) -> dict[str, str]:
+        api_key = self.api_key or os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY is not set")
+        return {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+
+    def _build_payload(
+        self, prompt: str, *, metadata: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+        }
+        if self.options:
+            payload.update(self.options)
+        if metadata:
+            payload["metadata"] = metadata
+        return payload
+
+
+@dataclass
+class AnthropicClient:
+    model: str
+    api_key: str | None = None
+    base_url: str = "https://api.anthropic.com/v1"
+    timeout: float = 30.0
+    max_tokens: int = 2048
+    options: dict[str, Any] | None = None
+
+    def complete(self, prompt: str, *, metadata: dict[str, Any] | None = None) -> str:
+        payload = self._build_payload(prompt, metadata=metadata)
+        request = Request(
+            f"{self.base_url}/messages",
+            data=json.dumps(payload).encode("utf-8"),
+            headers=self._headers(),
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=self.timeout) as response:
+                body = response.read().decode("utf-8")
+        except (HTTPError, URLError) as exc:
+            raise RuntimeError(f"Anthropic request failed: {exc}") from exc
+        return _parse_anthropic_response(body)
+
+    def _headers(self) -> dict[str, str]:
+        api_key = self.api_key or os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise RuntimeError("ANTHROPIC_API_KEY is not set")
+        return {
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+        }
+
+    def _build_payload(
+        self, prompt: str, *, metadata: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "model": self.model,
+            "max_tokens": self.max_tokens,
+            "messages": [{"role": "user", "content": prompt}],
+        }
+        if self.options:
+            payload.update(self.options)
+        if metadata:
+            payload["metadata"] = metadata
+        return payload
+
+
+def _parse_openai_response(body: str) -> str:
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError:
+        return body
+    choices = payload.get("choices", [])
+    if not choices:
+        return ""
+    message = choices[0].get("message", {})
+    return str(message.get("content", ""))
+
+
+def _parse_anthropic_response(body: str) -> str:
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError:
+        return body
+    content = payload.get("content", [])
+    if not content:
+        return ""
+    first = content[0]
+    if isinstance(first, dict):
+        return str(first.get("text", ""))
+    return str(first)
+
+
+@dataclass
 class OllamaClient:
     model: str
     base_url: str = "http://localhost:11434"
@@ -81,6 +203,33 @@ class OllamaClient:
     options: dict[str, Any] | None = None
 
     def complete(self, prompt: str, *, metadata: dict[str, Any] | None = None) -> str:
+        try:
+            return self._complete_with_sdk(prompt, metadata=metadata)
+        except Exception:
+            return self._complete_with_http(prompt, metadata=metadata)
+
+    def _complete_with_sdk(
+        self, prompt: str, *, metadata: dict[str, Any] | None = None
+    ) -> str:
+        try:
+            from ollama import Client
+        except Exception as exc:  # pragma: no cover - optional dependency
+            raise RuntimeError("ollama-python not available") from exc
+
+        client = Client(host=self.base_url)
+        response = client.generate(
+            model=self.model,
+            prompt=prompt,
+            options=self.options,
+            stream=False,
+        )
+        if isinstance(response, dict):
+            return str(response.get("response", ""))
+        return str(response)
+
+    def _complete_with_http(
+        self, prompt: str, *, metadata: dict[str, Any] | None = None
+    ) -> str:
         payload = self._build_payload(prompt, metadata=metadata)
         request = Request(
             f"{self.base_url}/api/generate",
@@ -103,7 +252,7 @@ class OllamaClient:
     def _build_payload(
         self, prompt: str, *, metadata: dict[str, Any] | None = None
     ) -> dict[str, Any]:
-        payload = {
+        payload: dict[str, Any] = {
             "model": self.model,
             "prompt": prompt,
             "stream": False,
@@ -119,9 +268,11 @@ __all__ = [
     "AsyncLLMClient",
     "AsyncLLMHook",
     "AsyncNoOpLLMClient",
+    "AnthropicClient",
     "LLMClient",
     "LLMHook",
     "NoOpLLMClient",
+    "OpenAIClient",
     "OllamaClient",
     "PromptTemplate",
 ]
