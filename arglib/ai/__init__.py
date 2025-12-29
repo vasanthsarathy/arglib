@@ -7,7 +7,14 @@ from .evaluation import (
     score_evidence,
     validate_edges,
 )
-from .miner import ArgumentMiner, LongDocumentMiner, SimpleArgumentMiner
+from .llm import LLMClient, LLMHook, NoOpLLMClient, PromptTemplate
+from .miner import (
+    ArgumentMiner,
+    HookedArgumentMiner,
+    LongDocumentMiner,
+    Segmenter,
+    SimpleArgumentMiner,
+)
 from .mining import (
     FixedWindowSplitter,
     GraphReconciler,
@@ -25,13 +32,19 @@ __all__ = [
     "EdgeValidationResult",
     "EvidenceEvaluation",
     "HeuristicEvaluator",
+    "HookedArgumentMiner",
+    "LLMClient",
+    "LLMHook",
     "FixedWindowSplitter",
     "GraphReconciler",
     "LongDocumentMiner",
     "MergePolicy",
     "MergeResult",
+    "NoOpLLMClient",
     "ParagraphSplitter",
+    "PromptTemplate",
     "Segment",
+    "Segmenter",
     "SimpleArgumentMiner",
     "SimpleGraphReconciler",
     "Splitter",

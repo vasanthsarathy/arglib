@@ -23,6 +23,33 @@ miner = LongDocumentMiner(miner=SimpleArgumentMiner(), splitter=splitter)
 graph = miner.parse(long_text)
 ```
 
+## LLM-assisted splitting
+```python
+from arglib.ai import LLMHook, LongDocumentMiner, NoOpLLMClient, PromptTemplate
+
+hook = LLMHook(
+    client=NoOpLLMClient(response='[{"id":"seg-1","text":"Chunk 1","start":0,"end":7}]'),
+    template=PromptTemplate(
+        system="Return JSON segments.",
+        user="{input}",
+    ),
+)
+miner = LongDocumentMiner(splitter_hook=hook)
+graph = miner.parse(long_text)
+```
+
+## LLM-backed mining
+```python
+from arglib.ai import HookedArgumentMiner, LLMHook, NoOpLLMClient, PromptTemplate
+
+hook = LLMHook(
+    client=NoOpLLMClient(response='{"units": {}, "relations": [], "metadata": {}}'),
+    template=PromptTemplate(system="Return graph JSON.", user="{input}"),
+)
+miner = HookedArgumentMiner(hook=hook)
+graph = miner.parse("Some text")
+```
+
 ## Deduplication and coreference hints
 `MergePolicy` lets you control how claims are deduplicated. The default matches
 lowercased text. You can add a similarity function:

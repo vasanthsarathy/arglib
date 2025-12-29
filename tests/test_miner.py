@@ -1,4 +1,11 @@
-from arglib.ai import LongDocumentMiner, SimpleArgumentMiner
+from arglib.ai import (
+    HookedArgumentMiner,
+    LLMHook,
+    LongDocumentMiner,
+    NoOpLLMClient,
+    PromptTemplate,
+    SimpleArgumentMiner,
+)
 
 
 def test_simple_argument_miner_creates_claims_with_spans():
@@ -20,3 +27,37 @@ def test_long_document_miner_offsets_spans():
 
     assert starts[0] == 0
     assert starts[1] > 0
+
+
+def test_hooked_argument_miner_parses_json_graph():
+    response = (
+        '{"units": {"c1": {"id": "c1", "text": "A", "type": "fact", '
+        '"spans": [], "evidence": [], "evidence_ids": [], "metadata": {}}}, '
+        '"relations": [], "metadata": {}}'
+    )
+    client = NoOpLLMClient(response=response)
+    hook = LLMHook(
+        client=client,
+        template=PromptTemplate(system="sys", user="{input}"),
+    )
+    miner = HookedArgumentMiner(hook=hook)
+    graph = miner.parse("ignored", doc_id="doc-3")
+
+    assert list(graph.units.keys()) == ["c1"]
+
+
+def test_long_document_miner_uses_splitter_hook():
+    client = NoOpLLMClient(
+        response='[{"id": "seg-1", "text": "Alpha", "start": 0, "end": 5}]'
+    )
+    hook = LLMHook(
+        client=client,
+        template=PromptTemplate(system="sys", user="{input}"),
+    )
+    miner = LongDocumentMiner(
+        miner=SimpleArgumentMiner(),
+        splitter_hook=hook,
+    )
+    graph = miner.parse("Alpha Beta", doc_id="doc-4")
+
+    assert len(graph.units) == 1
