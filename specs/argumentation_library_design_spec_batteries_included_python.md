@@ -247,6 +247,14 @@ assumptions.suggest(G, edge=("c1","c2"), k=3)
   - VLM evidence extractors
   - streamlit widgets (optional)
 
+### UI + Service integration (separate repos)
+- Keep `arglib` as the core library.
+- Create `arglib-server` (FastAPI) to expose graph CRUD, mining, diagnostics,
+  credibility, critique, and export endpoints.
+- Create `arglib-ui` as a web app for graph authoring, evidence management,
+  assumption review, and analysis reports.
+- UI consumes server APIs; server uses `arglib` for all logic.
+
 ---
 
 # Public API: Minimum Delightful Set

@@ -39,7 +39,10 @@ class LLMHook:
 
     def run(self, *, input: str, context: dict[str, Any] | None = None) -> str:
         prompt = self.template.render(input=input, context=context)
-        return self.client.complete(prompt, metadata=context)
+        metadata = None
+        if context and "llm_metadata" in context:
+            metadata = context.get("llm_metadata")
+        return self.client.complete(prompt, metadata=metadata)
 
 
 @dataclass
@@ -49,7 +52,10 @@ class AsyncLLMHook:
 
     async def run(self, *, input: str, context: dict[str, Any] | None = None) -> str:
         prompt = self.template.render(input=input, context=context)
-        return await self.client.complete(prompt, metadata=context)
+        metadata = None
+        if context and "llm_metadata" in context:
+            metadata = context.get("llm_metadata")
+        return await self.client.complete(prompt, metadata=metadata)
 
 
 @dataclass

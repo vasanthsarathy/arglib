@@ -34,3 +34,8 @@ Current status: supporting documents + evidence cards implemented; multimodal ex
 - API freeze, docs, tutorials, benchmarks, model cards.
 - Integrations (LangChain/LlamaIndex, optional VLM hooks).
 - Reporting: critique summaries, evidence quality dashboards.
+
+## v1.1 (UI + service integration)
+- `arglib-server`: FastAPI service for graph CRUD, mining, diagnostics, exports.
+- `arglib-ui`: web UI for authoring, evidence review, and analysis workflows.
+- Shared API contract (OpenAPI) and versioned compatibility with `arglib`.

@@ -29,9 +29,15 @@ def compute_credibility(
     epsilon: float = 1e-6,
     evidence_min: float = 0.0,
     evidence_max: float = 1.0,
+    initial_scores: dict[str, float] | None = None,
 ) -> CredibilityResult:
     evidence_scores: dict[str, float] = {}
     for unit_id, unit in graph.units.items():
+        if initial_scores is not None:
+            score = initial_scores.get(unit_id, 0.0)
+            evidence_scores[unit_id] = _clamp(score, -1.0, 1.0)
+            continue
+
         scores = _collect_evidence_scores(unit, graph)
         if scores:
             min_val = (
@@ -117,4 +123,8 @@ def _edge_contribution(edge: Relation, scores: dict[str, float]) -> float:
     source_score = scores.get(edge.src, 0.0)
     if edge.kind == "support":
         return strength * source_score
-    return -strength * abs(source_score)
+    return -strength * source_score
+
+
+def _clamp(value: float, low: float, high: float) -> float:
+    return max(low, min(high, value))

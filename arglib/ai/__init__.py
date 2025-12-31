@@ -1,5 +1,12 @@
 """AI-assisted mining tools."""
 
+from .credibility import (
+    CLAIM_CREDIBILITY_TEMPLATE,
+    ClaimCredibilityResult,
+    EvidenceScore,
+    build_claim_credibility_hook,
+    score_claims_with_llm,
+)
 from .evaluation import (
     EdgeValidationResult,
     EvidenceEvaluation,
@@ -50,7 +57,10 @@ __all__ = [
     "AsyncNoOpLLMClient",
     "AnthropicClient",
     "AsyncLongDocumentMiner",
+    "CLAIM_CREDIBILITY_TEMPLATE",
+    "ClaimCredibilityResult",
     "EdgeValidationResult",
+    "EvidenceScore",
     "EvidenceEvaluation",
     "HeuristicEvaluator",
     "HookedArgumentMiner",
@@ -73,5 +83,7 @@ __all__ = [
     "Splitter",
     "token_jaccard_similarity",
     "score_evidence",
+    "score_claims_with_llm",
     "validate_edges",
+    "build_claim_credibility_hook",
 ]
