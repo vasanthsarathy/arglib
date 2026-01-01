@@ -6,12 +6,24 @@ from .assumptions import (
     build_assumption_hook,
     generate_edge_assumptions,
 )
+from .claim_types import (
+    CLAIM_TYPE_TEMPLATE,
+    ClaimTypeResult,
+    build_claim_type_hook,
+    classify_claim_type,
+)
 from .credibility import (
     CLAIM_CREDIBILITY_TEMPLATE,
     ClaimCredibilityResult,
     EvidenceScore,
     build_claim_credibility_hook,
     score_claims_with_llm,
+)
+from .edge_validation import (
+    EDGE_VALIDATION_TEMPLATE,
+    EdgeValidationLLMResult,
+    build_edge_validation_hook,
+    validate_edge_with_llm,
 )
 from .evaluation import (
     EdgeValidationResult,
@@ -64,10 +76,14 @@ __all__ = [
     "AnthropicClient",
     "AsyncLongDocumentMiner",
     "ASSUMPTION_TEMPLATE",
+    "CLAIM_TYPE_TEMPLATE",
     "CLAIM_CREDIBILITY_TEMPLATE",
     "AssumptionResult",
+    "ClaimTypeResult",
     "ClaimCredibilityResult",
+    "EDGE_VALIDATION_TEMPLATE",
     "EdgeValidationResult",
+    "EdgeValidationLLMResult",
     "EvidenceScore",
     "EvidenceEvaluation",
     "HeuristicEvaluator",
@@ -91,9 +107,13 @@ __all__ = [
     "Splitter",
     "token_jaccard_similarity",
     "build_assumption_hook",
+    "build_claim_type_hook",
+    "build_edge_validation_hook",
     "score_evidence",
     "score_claims_with_llm",
+    "classify_claim_type",
     "generate_edge_assumptions",
+    "validate_edge_with_llm",
     "validate_edges",
     "build_claim_credibility_hook",
 ]
