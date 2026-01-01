@@ -23,6 +23,7 @@ dev = [
   "pytest",
   "ruff",
   "mypy",
+  "pre-commit",
   "pypdf>=6.5.0",
   "ollama-python>=0.1.2",
 ]

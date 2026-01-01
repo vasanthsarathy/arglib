@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from arglib.core import ArgumentGraph
 from arglib.ai.assumptions import generate_edge_assumptions
 from arglib.ai.llm import LLMHook
+from arglib.core import ArgumentGraph
 
 
 def suggest_missing_assumptions(
