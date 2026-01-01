@@ -1,5 +1,11 @@
 """AI-assisted mining tools."""
 
+from .assumptions import (
+    ASSUMPTION_TEMPLATE,
+    AssumptionResult,
+    build_assumption_hook,
+    generate_edge_assumptions,
+)
 from .credibility import (
     CLAIM_CREDIBILITY_TEMPLATE,
     ClaimCredibilityResult,
@@ -57,7 +63,9 @@ __all__ = [
     "AsyncNoOpLLMClient",
     "AnthropicClient",
     "AsyncLongDocumentMiner",
+    "ASSUMPTION_TEMPLATE",
     "CLAIM_CREDIBILITY_TEMPLATE",
+    "AssumptionResult",
     "ClaimCredibilityResult",
     "EdgeValidationResult",
     "EvidenceScore",
@@ -82,8 +90,10 @@ __all__ = [
     "SimpleGraphReconciler",
     "Splitter",
     "token_jaccard_similarity",
+    "build_assumption_hook",
     "score_evidence",
     "score_claims_with_llm",
+    "generate_edge_assumptions",
     "validate_edges",
     "build_claim_credibility_hook",
 ]
