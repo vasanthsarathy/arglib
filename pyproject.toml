@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arglib"
-version = "0.1.5"
+version = "0.1.6"
 description = "Build a general-purpose, batteries-included Python library for creating, importing, analyzing, and reasoning over argument graphs derived from text and multimodal evidence."
 readme = "README.md"
 requires-python = ">=3.11"
