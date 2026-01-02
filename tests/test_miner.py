@@ -12,6 +12,7 @@ from arglib.ai import (
     NoOpLLMClient,
     PromptTemplate,
     SimpleArgumentMiner,
+    build_argument_mining_pipeline,
     build_argument_miner,
 )
 
@@ -104,3 +105,34 @@ def test_async_long_document_miner_uses_splitter_hook():
         return len(graph.units)
 
     assert asyncio.run(run()) == 1
+
+
+def test_argument_mining_pipeline_extracts_relations():
+    class SequenceLLMClient:
+        def __init__(self, responses: list[str]) -> None:
+            self._responses = responses
+            self._index = 0
+
+        def complete(self, prompt: str, *, metadata=None) -> str:
+            if self._index >= len(self._responses):
+                return self._responses[-1]
+            response = self._responses[self._index]
+            self._index += 1
+            return response
+
+    responses = [
+        '{"claims": [{"text": "Claim A", "type": "fact"}]}',
+        '{"claims": [{"text": "Claim B", "type": "policy"}]}',
+        '{"relations": [{"src": "c1", "dst": "c2", "kind": "support"}]}',
+    ]
+    client = SequenceLLMClient(responses)
+    pipeline = build_argument_mining_pipeline(client)
+
+    graph = pipeline.parse("Claim A.\n\nClaim B.", doc_id="doc-7")
+
+    assert len(graph.units) == 2
+    assert len(graph.relations) == 1
+    relation = graph.relations[0]
+    assert relation.kind == "support"
+    assert relation.src in graph.units
+    assert relation.dst in graph.units
