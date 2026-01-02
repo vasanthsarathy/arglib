@@ -10,6 +10,7 @@ from .evidence import EvidenceCard, EvidenceItem, SupportingDocument
 from .relations import Relation
 from .spans import TextSpan
 from .units import ArgumentUnit
+from .warrants import Warrant, WarrantAttack
 
 if TYPE_CHECKING:
     from arglib.semantics import DungAF
@@ -18,7 +19,9 @@ if TYPE_CHECKING:
 @dataclass
 class ArgumentGraph:
     units: dict[str, ArgumentUnit] = field(default_factory=dict)
+    warrants: dict[str, Warrant] = field(default_factory=dict)
     relations: list[Relation] = field(default_factory=list)
+    warrant_attacks: list[WarrantAttack] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
     evidence_cards: dict[str, EvidenceCard] = field(default_factory=dict)
     supporting_documents: dict[str, SupportingDocument] = field(default_factory=dict)
@@ -42,6 +45,7 @@ class ArgumentGraph:
         evidence_ids: list[str] | None = None,
         evidence_min: float | None = None,
         evidence_max: float | None = None,
+        score: float | None = None,
     ) -> str:
         if claim_id is None:
             claim_id = self._next_id("c")
@@ -54,6 +58,7 @@ class ArgumentGraph:
             evidence_ids=list(evidence_ids or []),
             evidence_min=evidence_min,
             evidence_max=evidence_max,
+            score=score,
             metadata=dict(metadata or {}),
         )
         self.units[claim_id] = unit
@@ -64,6 +69,8 @@ class ArgumentGraph:
         src: str,
         dst: str,
         kind: Literal["support", "attack", "undercut", "rebut"],
+        warrant_ids: list[str] | None = None,
+        gate_mode: Literal["AND", "OR"] = "OR",
         weight: float | None = None,
         rationale: str | None = None,
         metadata: dict[str, Any] | None = None,
@@ -72,6 +79,8 @@ class ArgumentGraph:
             src=src,
             dst=dst,
             kind=kind,
+            warrant_ids=list(warrant_ids or []),
+            gate_mode=gate_mode,
             weight=weight,
             rationale=rationale,
             metadata=dict(metadata or {}),
@@ -105,6 +114,71 @@ class ArgumentGraph:
         )
         self.units[unit_id].evidence.append(item)
         return item
+
+    def add_warrant(
+        self,
+        text: str,
+        warrant_id: str | None = None,
+        type: Literal["fact", "value", "policy", "other"] = "other",
+        spans: list[TextSpan] | None = None,
+        evidence: list[EvidenceItem] | None = None,
+        metadata: dict[str, Any] | None = None,
+        evidence_ids: list[str] | None = None,
+        score: float | None = None,
+    ) -> str:
+        if warrant_id is None:
+            warrant_id = self._next_id("w")
+        warrant = Warrant(
+            id=warrant_id,
+            text=text,
+            type=type,
+            spans=list(spans or []),
+            evidence=list(evidence or []),
+            evidence_ids=list(evidence_ids or []),
+            score=score,
+            metadata=dict(metadata or {}),
+        )
+        self.warrants[warrant_id] = warrant
+        return warrant_id
+
+    def attach_evidence_to_warrant(
+        self,
+        warrant_id: str,
+        evidence_id: str,
+        source: TextSpan | dict[str, Any],
+        stance: Literal["supports", "attacks", "neutral"],
+        strength: float | None = None,
+        quality: dict[str, Any] | None = None,
+    ) -> EvidenceItem:
+        if warrant_id not in self.warrants:
+            raise KeyError(f"Unknown warrant id: {warrant_id}")
+        item = EvidenceItem(
+            id=evidence_id,
+            source=source,
+            stance=stance,
+            strength=strength,
+            quality=dict(quality or {}),
+        )
+        self.warrants[warrant_id].evidence.append(item)
+        return item
+
+    def add_warrant_attack(
+        self,
+        src: str,
+        warrant_id: str,
+        rationale: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> WarrantAttack:
+        if warrant_id not in self.warrants:
+            raise KeyError(f"Unknown warrant id: {warrant_id}")
+        attack = WarrantAttack(
+            src=src,
+            warrant_id=warrant_id,
+            rationale=rationale,
+            metadata=dict(metadata or {}),
+        )
+        self.warrant_attacks.append(attack)
+        return attack
 
     def add_supporting_document(
         self, document: SupportingDocument, *, overwrite: bool = False
@@ -146,7 +220,12 @@ class ArgumentGraph:
     def to_dict(self) -> dict[str, Any]:
         return {
             "units": {unit_id: unit.to_dict() for unit_id, unit in self.units.items()},
+            "warrants": {
+                warrant_id: warrant.to_dict()
+                for warrant_id, warrant in self.warrants.items()
+            },
             "relations": [relation.to_dict() for relation in self.relations],
+            "warrant_attacks": [attack.to_dict() for attack in self.warrant_attacks],
             "metadata": self.metadata,
             "evidence_cards": {
                 evidence_id: card.to_dict()
@@ -181,7 +260,15 @@ class ArgumentGraph:
             unit_id: ArgumentUnit.from_dict(unit_data)
             for unit_id, unit_data in data.get("units", {}).items()
         }
+        warrants = {
+            warrant_id: Warrant.from_dict(warrant_data)
+            for warrant_id, warrant_data in data.get("warrants", {}).items()
+        }
         relations = [Relation.from_dict(item) for item in data.get("relations", [])]
+        warrant_attacks = [
+            WarrantAttack.from_dict(item)
+            for item in data.get("warrant_attacks", [])
+        ]
         metadata = data.get("metadata", {})
         evidence_cards = {
             evidence_id: EvidenceCard.from_dict(card)
@@ -197,7 +284,9 @@ class ArgumentGraph:
         }
         return cls(
             units=units,
+            warrants=warrants,
             relations=relations,
+            warrant_attacks=warrant_attacks,
             metadata=metadata,
             evidence_cards=evidence_cards,
             supporting_documents=supporting_documents,

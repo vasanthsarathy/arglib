@@ -16,6 +16,8 @@ def validate_graph_dict(data: dict[str, Any]) -> list[str]:
     evidence_cards = data.get("evidence_cards", {})
     supporting_documents = data.get("supporting_documents", {})
     argument_bundles = data.get("argument_bundles", {})
+    warrants = data.get("warrants", {})
+    warrant_attacks = data.get("warrant_attacks", [])
 
     if not isinstance(units, dict):
         errors.append("units must be a dictionary of id -> unit.")
@@ -34,6 +36,12 @@ def validate_graph_dict(data: dict[str, Any]) -> list[str]:
     if argument_bundles is not None and not isinstance(argument_bundles, dict):
         errors.append("argument_bundles must be an object when provided.")
         argument_bundles = {}
+    if warrants is not None and not isinstance(warrants, dict):
+        errors.append("warrants must be an object when provided.")
+        warrants = {}
+    if warrant_attacks is not None and not isinstance(warrant_attacks, list):
+        errors.append("warrant_attacks must be a list when provided.")
+        warrant_attacks = []
 
     for unit_id, unit in units.items():
         if not isinstance(unit_id, str):
@@ -58,6 +66,9 @@ def validate_graph_dict(data: dict[str, Any]) -> list[str]:
         if "evidence_max" in unit and unit["evidence_max"] is not None:
             if not isinstance(unit["evidence_max"], (int, float)):
                 errors.append(f"unit '{unit_id}' evidence_max must be a number.")
+        if "score" in unit and unit["score"] is not None:
+            if not isinstance(unit["score"], (int, float)):
+                errors.append(f"unit '{unit_id}' score must be a number.")
         if "metadata" in unit and not isinstance(unit["metadata"], dict):
             errors.append(f"unit '{unit_id}' metadata must be an object.")
         for evidence_id in unit.get("evidence_ids", []):
@@ -99,6 +110,31 @@ def validate_graph_dict(data: dict[str, Any]) -> list[str]:
             errors.append(
                 f"supporting_document '{doc_id}' id field does not match its key."
             )
+        if "trust" in doc and doc["trust"] is not None:
+            if not isinstance(doc["trust"], (int, float)):
+                errors.append(
+                    f"supporting_document '{doc_id}' trust must be a number."
+                )
+
+    for warrant_id, warrant in warrants.items():
+        if not isinstance(warrant_id, str):
+            errors.append("warrant keys must be strings.")
+            continue
+        if not isinstance(warrant, dict):
+            errors.append(f"warrant '{warrant_id}' must be an object.")
+            continue
+        if "id" not in warrant or "text" not in warrant:
+            errors.append(f"warrant '{warrant_id}' must include 'id' and 'text'.")
+        if warrant.get("id") != warrant_id:
+            errors.append(f"warrant '{warrant_id}' id field does not match its key.")
+        if "evidence_ids" in warrant and not isinstance(warrant["evidence_ids"], list):
+            errors.append(f"warrant '{warrant_id}' evidence_ids must be a list.")
+        for evidence_id in warrant.get("evidence_ids", []):
+            if evidence_cards and evidence_id not in evidence_cards:
+                errors.append(
+                    f"warrant '{warrant_id}' evidence_id '{evidence_id}' is not a known "
+                    f"evidence card."
+                )
 
     for bundle_id, bundle in argument_bundles.items():
         if not isinstance(bundle_id, str):
@@ -133,6 +169,36 @@ def validate_graph_dict(data: dict[str, Any]) -> list[str]:
             errors.append(f"relation[{index}] src '{src}' is not a known unit id.")
         if isinstance(dst, str) and dst not in units:
             errors.append(f"relation[{index}] dst '{dst}' is not a known unit id.")
+        if "warrant_ids" in relation and not isinstance(
+            relation.get("warrant_ids", []), list
+        ):
+            errors.append(f"relation[{index}] warrant_ids must be a list.")
+        for warrant_id in relation.get("warrant_ids", []):
+            if warrants and warrant_id not in warrants:
+                errors.append(
+                    f"relation[{index}] warrant_id '{warrant_id}' is not a known warrant."
+                )
+        gate_mode = relation.get("gate_mode")
+        if gate_mode is not None and gate_mode not in {"AND", "OR"}:
+            errors.append(f"relation[{index}] gate_mode must be AND or OR.")
+
+    for index, attack in enumerate(warrant_attacks):
+        if not isinstance(attack, dict):
+            errors.append(f"warrant_attacks[{index}] must be an object.")
+            continue
+        if "src" not in attack or "warrant_id" not in attack:
+            errors.append(f"warrant_attacks[{index}] missing 'src' or 'warrant_id'.")
+            continue
+        if isinstance(attack.get("src"), str) and attack.get("src") not in units:
+            errors.append(
+                f"warrant_attacks[{index}] src '{attack.get('src')}' is not a known unit id."
+            )
+        if isinstance(attack.get("warrant_id"), str) and attack.get(
+            "warrant_id"
+        ) not in warrants:
+            errors.append(
+                f"warrant_attacks[{index}] warrant_id '{attack.get('warrant_id')}' is not a known warrant."
+            )
 
     return errors
 

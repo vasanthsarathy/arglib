@@ -1,4 +1,4 @@
-"""Argument unit model."""
+"""Warrant model."""
 
 from __future__ import annotations
 
@@ -10,15 +10,13 @@ from .spans import TextSpan
 
 
 @dataclass
-class ArgumentUnit:
+class Warrant:
     id: str
     text: str
     type: Literal["fact", "value", "policy", "other"] = "other"
     spans: list[TextSpan] = field(default_factory=list)
     evidence: list[EvidenceItem] = field(default_factory=list)
     evidence_ids: list[str] = field(default_factory=list)
-    evidence_min: float | None = None
-    evidence_max: float | None = None
     score: float | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -30,14 +28,12 @@ class ArgumentUnit:
             "spans": [span.to_dict() for span in self.spans],
             "evidence": [item.to_dict() for item in self.evidence],
             "evidence_ids": list(self.evidence_ids),
-            "evidence_min": self.evidence_min,
-            "evidence_max": self.evidence_max,
             "score": self.score,
             "metadata": self.metadata,
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> ArgumentUnit:
+    def from_dict(cls, data: dict[str, Any]) -> Warrant:
         return cls(
             id=data["id"],
             text=data["text"],
@@ -47,8 +43,37 @@ class ArgumentUnit:
                 EvidenceItem.from_dict(item) for item in data.get("evidence", [])
             ],
             evidence_ids=list(data.get("evidence_ids", [])),
-            evidence_min=data.get("evidence_min"),
-            evidence_max=data.get("evidence_max"),
             score=data.get("score"),
             metadata=data.get("metadata", {}),
         )
+
+
+@dataclass
+class WarrantAttack:
+    src: str
+    warrant_id: str
+    kind: Literal["attack"] = "attack"
+    rationale: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "src": self.src,
+            "warrant_id": self.warrant_id,
+            "kind": self.kind,
+            "rationale": self.rationale,
+            "metadata": self.metadata,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> WarrantAttack:
+        return cls(
+            src=data["src"],
+            warrant_id=data["warrant_id"],
+            kind=data.get("kind", "attack"),
+            rationale=data.get("rationale"),
+            metadata=data.get("metadata", {}),
+        )
+
+
+__all__ = ["Warrant", "WarrantAttack"]

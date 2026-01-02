@@ -6,6 +6,7 @@ from .graph import ArgumentGraph
 from .relations import Relation
 from .spans import TextSpan
 from .units import ArgumentUnit
+from .warrants import Warrant, WarrantAttack
 
 __all__ = [
     "ArgumentGraph",
@@ -17,4 +18,6 @@ __all__ = [
     "Relation",
     "SupportingDocument",
     "TextSpan",
+    "Warrant",
+    "WarrantAttack",
 ]

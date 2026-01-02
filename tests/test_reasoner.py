@@ -2,15 +2,15 @@ from arglib.core import ArgumentGraph
 from arglib.reasoning import Reasoner
 
 
-def test_reasoner_grounded_extension():
+def test_reasoner_credibility_and_gate_scores():
     graph = ArgumentGraph.new()
     a = graph.add_claim("A")
     b = graph.add_claim("B")
-    graph.add_attack(a, b)
+    w1 = graph.add_warrant("A is relevant to B", type="fact")
+    graph.add_support(a, b, warrant_ids=[w1], gate_mode="OR")
 
     reasoner = Reasoner(graph)
-    results = reasoner.run(["grounded_extension", "grounded_labeling"])
+    results = reasoner.run(["credibility_propagation", "gate_scores"])
 
-    assert results["grounded_extension"] == [a]
-    assert results["grounded_labeling"][a] == "in"
-    assert results["grounded_labeling"][b] == "out"
+    assert "final_scores" in results["credibility_propagation"]
+    assert results["gate_scores"]

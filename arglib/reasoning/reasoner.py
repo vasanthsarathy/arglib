@@ -7,7 +7,6 @@ from typing import Any
 
 from arglib.core import ArgumentGraph
 from arglib.reasoning.credibility import compute_credibility
-from arglib.semantics.aba import enumerate_dispute_trees
 
 
 class Reasoner:
@@ -15,40 +14,26 @@ class Reasoner:
         self.graph = graph
 
     def run(self, tasks: Iterable[str], explain: bool = False) -> dict[str, Any]:
-        af = self.graph.to_dung()
         results: dict[str, Any] = {}
 
         for task in tasks:
             task_key = task.lower()
-            if task_key == "grounded_extension":
-                results[task] = _normalize_extension(af.grounded_extension())
-            elif task_key == "preferred_extensions":
-                results[task] = [
-                    _normalize_extension(ext) for ext in af.preferred_extensions()
-                ]
-            elif task_key == "stable_extensions":
-                results[task] = [
-                    _normalize_extension(ext) for ext in af.stable_extensions()
-                ]
-            elif task_key == "complete_extensions":
-                results[task] = [
-                    _normalize_extension(ext) for ext in af.complete_extensions()
-                ]
-            elif task_key == "grounded_labeling":
-                results[task] = af.labelings("grounded")[0]
-            elif task_key == "credibility_propagation":
+            if task_key in {"credibility_propagation", "credibility"}:
                 credibility = compute_credibility(self.graph)
                 results[task] = {
                     "initial_evidence": credibility.initial_evidence,
+                    "warrant_scores": credibility.warrant_scores,
+                    "gate_scores": credibility.gate_scores,
                     "final_scores": credibility.final_scores,
                 }
-            elif task_key == "aba_dispute_trees":
-                aba = self.graph.metadata.get("aba_framework")
-                if aba is None:
-                    raise ValueError(
-                        "ABA framework not found in graph.metadata['aba_framework']."
-                    )
-                results[task] = enumerate_dispute_trees(aba, sorted(aba.assumptions))
+            elif task_key in {"claim_scores", "warrant_scores", "gate_scores"}:
+                credibility = compute_credibility(self.graph)
+                if task_key == "claim_scores":
+                    results[task] = credibility.final_scores
+                elif task_key == "warrant_scores":
+                    results[task] = credibility.warrant_scores
+                else:
+                    results[task] = credibility.gate_scores
             else:
                 raise ValueError(f"Unsupported task: {task}")
 
@@ -56,7 +41,3 @@ class Reasoner:
             results["explanations"] = {}
 
         return results
-
-
-def _normalize_extension(extension: Iterable[str]) -> list[str]:
-    return sorted(extension)

@@ -16,6 +16,7 @@ class SupportingDocument:
     name: str
     type: str
     url: str
+    trust: float | None = None
     size: float | None = None
     upload_date: str | None = None
     uploader: str | None = None
@@ -27,6 +28,7 @@ class SupportingDocument:
             "name": self.name,
             "type": self.type,
             "url": self.url,
+            "trust": self.trust,
             "size": self.size,
             "upload_date": self.upload_date,
             "uploader": self.uploader,
@@ -40,6 +42,7 @@ class SupportingDocument:
             name=data["name"],
             type=data["type"],
             url=data["url"],
+            trust=data.get("trust"),
             size=data.get("size"),
             upload_date=data.get("upload_date"),
             uploader=data.get("uploader"),
