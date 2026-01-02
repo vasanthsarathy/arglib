@@ -8,7 +8,7 @@ import json
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Protocol, cast
+from typing import Any, Literal, Protocol, cast
 
 from arglib.ai.llm import AsyncLLMHook, LLMHook, PromptTemplate
 from arglib.ai.mining import (
@@ -247,10 +247,13 @@ class ArgumentMiningPipeline:
             claim_type = (
                 claim.type if claim.type in {"fact", "value", "policy"} else "other"
             )
+            claim_type_literal = cast(
+                Literal["fact", "value", "policy", "other"], claim_type
+            )
             graph.add_claim(
                 claim.text,
                 claim_id=claim.id,
-                type=claim_type,
+                type=claim_type_literal,
                 spans=spans,
                 metadata=dict(claim.metadata),
             )
@@ -669,35 +672,6 @@ def _locate_span(segment: Segment, claim_text: str) -> tuple[int | None, int | N
     start = segment.start + idx
     end = start + len(claim_text)
     return start, end
-
-
-def _parse_json_payload(raw: str) -> dict[str, Any] | None:
-    if not raw:
-        return None
-    try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        pass
-    if "```" in raw:
-        cleaned = raw.replace("```json", "```").replace("```JSON", "```")
-        parts = cleaned.split("```")
-        for part in parts:
-            snippet = part.strip()
-            if not snippet:
-                continue
-            try:
-                return json.loads(snippet)
-            except json.JSONDecodeError:
-                continue
-    start = raw.find("{")
-    end = raw.rfind("}")
-    if start != -1 and end != -1 and start < end:
-        snippet = raw[start : end + 1]
-        try:
-            return json.loads(snippet)
-        except json.JSONDecodeError:
-            return None
-    return None
 
 
 __all__ = [
