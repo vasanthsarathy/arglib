@@ -1,6 +1,7 @@
 import asyncio
 
 from arglib.ai import (
+    ARGUMENT_MINING_TEMPLATE,
     AsyncArgumentMinerAdapter,
     AsyncLLMHook,
     AsyncLongDocumentMiner,
@@ -11,6 +12,7 @@ from arglib.ai import (
     NoOpLLMClient,
     PromptTemplate,
     SimpleArgumentMiner,
+    build_argument_miner,
 )
 
 
@@ -50,6 +52,22 @@ def test_hooked_argument_miner_parses_json_graph():
     graph = miner.parse("ignored", doc_id="doc-3")
 
     assert list(graph.units.keys()) == ["c1"]
+
+
+def test_argument_mining_hook_accepts_codefence_json():
+    response = (
+        "```json\n"
+        '{"units": {"c1": {"id": "c1", "text": "Claim", "type": "fact", '
+        '"spans": [], "evidence": [], "evidence_ids": [], "metadata": {}}}, '
+        '"relations": [], "metadata": {}}\n'
+        "```"
+    )
+    client = NoOpLLMClient(response=response)
+    miner = build_argument_miner(client)
+    graph = miner.parse("ignored", doc_id="doc-6")
+
+    assert list(graph.units.keys()) == ["c1"]
+    assert miner.hook.template == ARGUMENT_MINING_TEMPLATE
 
 
 def test_long_document_miner_uses_splitter_hook():

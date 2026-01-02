@@ -9,7 +9,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Protocol, cast
 
-from arglib.ai.llm import AsyncLLMHook, LLMHook
+from arglib.ai.llm import AsyncLLMHook, LLMHook, PromptTemplate
 from arglib.ai.mining import (
     GraphReconciler,
     MergeResult,
@@ -63,6 +63,48 @@ class AsyncArgumentMinerAdapter:
 class Segmenter(Protocol):
     def segment(self, text: str) -> list[str]:
         """Split raw text into chunks for mining."""
+
+
+ARGUMENT_MINING_TEMPLATE = PromptTemplate(
+    system=(
+        "You are an expert argument mining assistant. Extract claims and "
+        "relationships from text. Return JSON only, matching the schema exactly."
+    ),
+    user=(
+        "Text:\n{input}\n\n"
+        "Return a JSON object with this schema:\n"
+        "{{\n"
+        '  "units": {{\n'
+        '    "c1": {{"id": "c1", "text": "...", "type": "fact", '
+        '"spans": [], "evidence": [], "evidence_ids": [], "metadata": {{}}}},\n'
+        '    "c2": {{"id": "c2", "text": "...", "type": "value", '
+        '"spans": [], "evidence": [], "evidence_ids": [], "metadata": {{}}}}\n'
+        "  }},\n"
+        '  "relations": [\n'
+        '    {{"src": "c1", "dst": "c2", "kind": "support", "weight": 0.6}}\n'
+        "  ],\n"
+        '  "metadata": {{"source": "llm"}}\n'
+        "}}\n\n"
+        "Rules:\n"
+        "- Use relation kinds: support, attack, undercut, rebut.\n"
+        "- Keep ids stable (c1, c2, ...). All relation src/dst must exist.\n"
+        "- Include only claims stated or strongly implied by the text.\n"
+        "- Return JSON only. No markdown, no commentary.\n"
+    ),
+)
+
+
+def build_argument_mining_hook(client) -> LLMHook:
+    return LLMHook(client=client, template=ARGUMENT_MINING_TEMPLATE)
+
+
+def build_argument_miner(
+    client, *, fallback: ArgumentMiner | None = None
+) -> HookedArgumentMiner:
+    return HookedArgumentMiner(
+        hook=build_argument_mining_hook(client),
+        fallback=fallback or SimpleArgumentMiner(),
+    )
 
 
 @dataclass
@@ -254,10 +296,10 @@ def _offset_spans(graph: ArgumentGraph, offset: int) -> None:
 def _parse_json_graph(
     text: str, *, doc_id: str | None = None
 ) -> tuple[ArgumentGraph | None, list[str]]:
-    try:
-        payload = json.loads(text)
-    except json.JSONDecodeError as exc:
-        return None, [f"invalid json: {exc}"]
+    raw = text.strip()
+    payload = _parse_json_payload(raw)
+    if payload is None:
+        return None, ["invalid json: unable to parse payload"]
 
     if not isinstance(payload, dict):
         return None, ["payload must be an object"]
@@ -300,11 +342,43 @@ def _parse_segments(text: str) -> list[Segment]:
     return segments
 
 
+def _parse_json_payload(raw: str) -> dict[str, Any] | None:
+    if not raw:
+        return None
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+    if "```" in raw:
+        cleaned = raw.replace("```json", "```").replace("```JSON", "```")
+        parts = cleaned.split("```")
+        for part in parts:
+            snippet = part.strip()
+            if not snippet:
+                continue
+            try:
+                return json.loads(snippet)
+            except json.JSONDecodeError:
+                continue
+    start = raw.find("{")
+    end = raw.rfind("}")
+    if start != -1 and end != -1 and start < end:
+        snippet = raw[start : end + 1]
+        try:
+            return json.loads(snippet)
+        except json.JSONDecodeError:
+            return None
+    return None
+
+
 __all__ = [
     "ArgumentMiner",
     "AsyncArgumentMiner",
     "AsyncArgumentMinerAdapter",
     "AsyncLongDocumentMiner",
+    "ARGUMENT_MINING_TEMPLATE",
+    "build_argument_miner",
+    "build_argument_mining_hook",
     "HookedArgumentMiner",
     "LongDocumentMiner",
     "Segmenter",

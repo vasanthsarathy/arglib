@@ -45,6 +45,7 @@ from .llm import (
     PromptTemplate,
 )
 from .miner import (
+    ARGUMENT_MINING_TEMPLATE,
     ArgumentMiner,
     AsyncArgumentMiner,
     AsyncArgumentMinerAdapter,
@@ -53,6 +54,8 @@ from .miner import (
     LongDocumentMiner,
     Segmenter,
     SimpleArgumentMiner,
+    build_argument_miner,
+    build_argument_mining_hook,
 )
 from .mining import (
     FixedWindowSplitter,
@@ -73,6 +76,7 @@ __all__ = [
     "AsyncLLMClient",
     "AsyncLLMHook",
     "AsyncNoOpLLMClient",
+    "ARGUMENT_MINING_TEMPLATE",
     "AnthropicClient",
     "AsyncLongDocumentMiner",
     "ASSUMPTION_TEMPLATE",
@@ -106,6 +110,8 @@ __all__ = [
     "SimpleGraphReconciler",
     "Splitter",
     "token_jaccard_similarity",
+    "build_argument_miner",
+    "build_argument_mining_hook",
     "build_assumption_hook",
     "build_claim_type_hook",
     "build_edge_validation_hook",
