@@ -58,9 +58,9 @@ from .miner import (
     LongDocumentMiner,
     Segmenter,
     SimpleArgumentMiner,
-    build_argument_mining_pipeline,
     build_argument_miner,
     build_argument_mining_hook,
+    build_argument_mining_pipeline,
 )
 from .mining import (
     FixedWindowSplitter,

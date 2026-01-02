@@ -7,7 +7,8 @@ import inspect
 import json
 import re
 from dataclasses import dataclass, field
-from typing import Any, Callable, Protocol, cast
+from collections.abc import Callable
+from typing import Any, Protocol, cast
 
 from arglib.ai.llm import AsyncLLMHook, LLMHook, PromptTemplate
 from arglib.ai.mining import (
@@ -243,10 +244,13 @@ class ArgumentMiningPipeline:
                         modality="text",
                     )
                 )
+            claim_type = (
+                claim.type if claim.type in {"fact", "value", "policy"} else "other"
+            )
             graph.add_claim(
                 claim.text,
                 claim_id=claim.id,
-                type=claim.type if claim.type in {"fact", "value", "policy"} else "other",
+                type=claim_type,
                 spans=spans,
                 metadata=dict(claim.metadata),
             )
@@ -345,7 +349,9 @@ class ArgumentMiningPipeline:
         )
         response = hook.run(input="relations", context={"claims": claim_lines})
         parsed = _parse_json_payload(response)
-        relations_payload = parsed.get("relations") if isinstance(parsed, dict) else None
+        relations_payload = (
+            parsed.get("relations") if isinstance(parsed, dict) else None
+        )
         if not isinstance(relations_payload, list):
             trace.append("relations parse failed")
             return []

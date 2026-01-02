@@ -12,8 +12,8 @@ from arglib.ai import (
     NoOpLLMClient,
     PromptTemplate,
     SimpleArgumentMiner,
-    build_argument_mining_pipeline,
     build_argument_miner,
+    build_argument_mining_pipeline,
 )
 
 
