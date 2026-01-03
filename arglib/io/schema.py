@@ -132,8 +132,8 @@ def validate_graph_dict(data: dict[str, Any]) -> list[str]:
         for evidence_id in warrant.get("evidence_ids", []):
             if evidence_cards and evidence_id not in evidence_cards:
                 errors.append(
-                    f"warrant '{warrant_id}' evidence_id '{evidence_id}' is not a known "
-                    f"evidence card."
+                    f"warrant '{warrant_id}' evidence_id '{evidence_id}' is not a "
+                    "known evidence card."
                 )
 
     for bundle_id, bundle in argument_bundles.items():
@@ -176,7 +176,8 @@ def validate_graph_dict(data: dict[str, Any]) -> list[str]:
         for warrant_id in relation.get("warrant_ids", []):
             if warrants and warrant_id not in warrants:
                 errors.append(
-                    f"relation[{index}] warrant_id '{warrant_id}' is not a known warrant."
+                    f"relation[{index}] warrant_id '{warrant_id}' is not a known "
+                    "warrant."
                 )
         gate_mode = relation.get("gate_mode")
         if gate_mode is not None and gate_mode not in {"AND", "OR"}:
@@ -191,13 +192,15 @@ def validate_graph_dict(data: dict[str, Any]) -> list[str]:
             continue
         if isinstance(attack.get("src"), str) and attack.get("src") not in units:
             errors.append(
-                f"warrant_attacks[{index}] src '{attack.get('src')}' is not a known unit id."
+                f"warrant_attacks[{index}] src '{attack.get('src')}' is not a "
+                "known unit id."
             )
         if isinstance(attack.get("warrant_id"), str) and attack.get(
             "warrant_id"
         ) not in warrants:
             errors.append(
-                f"warrant_attacks[{index}] warrant_id '{attack.get('warrant_id')}' is not a known warrant."
+                f"warrant_attacks[{index}] warrant_id '{attack.get('warrant_id')}' "
+                "is not a known warrant."
             )
 
     return errors
