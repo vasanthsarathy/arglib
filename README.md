@@ -10,10 +10,10 @@ ArgLib is a batteries-included Python library for creating, importing, analyzing
 
 ## Highlights
 - Canonical `ArgumentGraph` model with provenance-aware nodes and relations.
-- Dung semantics (grounded/preferred/stable/complete) and basic ABA tooling.
+- Warrant-gated scoring with claim, warrant, and gate scores.
 - Diagnostics for cycles, components, reachability, and degree stats.
 - JSON IO with schema validation and Graphviz DOT export.
-- CLI tools for DOT, diagnostics, validation, and ABA.
+- CLI tools for DOT, diagnostics, and validation.
 - Argument bundles for higher-level reasoning and credibility propagation scoring.
 - Evidence cards and supporting documents for evidence pipelines.
 - Deterministic evidence scoring and edge validation helpers (LLM adapters planned).
@@ -26,15 +26,15 @@ python -m pip install arglib
 ## Quickstart
 ```python
 from arglib.core import ArgumentGraph
-from arglib.reasoning import Reasoner
+from arglib.reasoning import compute_credibility
 
 graph = ArgumentGraph.new(title="Parks")
 c1 = graph.add_claim("Green spaces reduce urban heat.", type="fact")
 c2 = graph.add_claim("Cities should fund parks.", type="policy")
-graph.add_support(c1, c2, rationale="Cooling improves health")
+graph.add_support(c1, c2, rationale="Cooling improves health", gate_mode="OR")
 
-reasoner = Reasoner(graph)
-results = reasoner.run(["grounded_extension", "grounded_labeling"])
+credibility = compute_credibility(graph)
+scores = credibility.final_scores
 ```
 
 ## Evidence and scoring
@@ -58,7 +58,6 @@ cred = compute_credibility(graph)
 arglib dot path/to/graph.json
 arglib diagnostics path/to/graph.json --validate
 arglib validate path/to/graph.json
-arglib aba path/to/aba.json --semantics preferred
 ```
 
 ## Development

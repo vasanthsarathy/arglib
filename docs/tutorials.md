@@ -74,17 +74,6 @@ cred = compute_credibility(graph)
 print(cred.final_scores)
 ```
 
-## ABA dispute trees
-```python
-from arglib.semantics.aba import ABAFramework
-
-aba = ABAFramework()
-aba.add_assumption("a")
-aba.add_contrary("a", "not_a")
-aba.add_rule("b", ["a"])
-trees = aba.dispute_trees()
-```
-
 ## AI evaluation helpers
 ```python
 from arglib.ai import score_evidence, validate_edges

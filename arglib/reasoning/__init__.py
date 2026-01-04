@@ -1,6 +1,7 @@
 """Reasoning interfaces."""
 
 from .credibility import CredibilityResult, compute_credibility
+from .explain import explain_credibility
 from .reasoner import Reasoner
 from .warrant_gated import (
     WarrantGatedConfig,
@@ -15,4 +16,5 @@ __all__ = [
     "WarrantGatedResult",
     "compute_credibility",
     "compute_warrant_gated_scores",
+    "explain_credibility",
 ]

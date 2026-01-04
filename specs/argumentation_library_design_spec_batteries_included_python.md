@@ -3,7 +3,7 @@ Build a **general-purpose, batteries-included Python library** for creating, imp
 
 Design targets:
 - **Usable in any pipeline** (NLP, VLM, OSINT tooling, writing support, education).
-- **Core graph + formal argumentation semantics** (Dung AFs, ABA) + pragmatic scoring.
+- **Warrant-gated claim graphs** with evidence-driven scoring and explainable gate behavior.
 - **Bridges unstructured text ↔ structured graphs** with traceability to source spans.
 - **Visualization-first optional**, but not UI-bound (export to common formats).
 - **Batteries included**: pretrained/fine-tuned models, prompts, patterns banks, evaluators.
@@ -25,9 +25,9 @@ Design/workflow projects
 ## In-scope
 1. **Graph data model**: claims/ADUs, edges (support/attack/undercut), evidence attachments, metadata, provenance.
 2. **Reasoning engines**:
-   - **Abstract Argumentation Framework (AAF)** (Dung): extensions (grounded, preferred, stable), admissibility, labeling.
-   - **Assumption-Based Argumentation (ABA)**: assumptions, rules, contraries; compute extensions, dispute trees.
-   - Optional: **weighted / probabilistic / bipolar** reasoning layers.
+   - **Warrant-gated credibility propagation** with claim, warrant, and gate scores.
+   - **Flaw/pattern evaluation** with gate invalidation policies.
+   - Optional: **weighted / probabilistic** extensions layered on top of the warrant model.
 3. **Graph algorithms**: centrality, SCCs, cycles, reachability, min-cut, clustering, temporal slicing.
 4. **Ingestion / mining**:
    - Text → ADUs + relations (+ claim type) + alignment.
@@ -141,12 +141,12 @@ ArgumentGraph(
 )
 ```
 
-### 6) `Theory` objects
-- `DungAF`: (Arguments, Attacks) view derived from `ArgumentGraph`.
-- `BipolarAF`: supports + attacks.
-- `ABAFramework`: (Language, Rules, Assumptions, Contraries).
+### 6) Warrant-gated objects
+- `Warrant`: assumption node that gates whether an edge transmits.
+- `WarrantAttack`: undercut edge from a claim to a warrant.
+- `Relation.warrant_ids` + `Relation.gate_mode` define the gate formula per edge.
 
-Key design decision: **one canonical graph object** with multiple *views*.
+Key design decision: **one canonical claim graph** with explicit warrants and gates.
 
 ### 7) `ArgumentBundle` (argument as subgraph)
 In IntelliProof-style graphs, nodes are **claims** and edges are **support/attack**. In abstract argumentation, an **argument** is an atomic unit. ArgLib will support a higher-level abstraction where an **argument** can be defined as a connected subgraph (at least two claims with a relation), and a derived graph is built over these arguments.
@@ -160,8 +160,8 @@ ArgumentBundle(
 ```
 API direction:
 - `ArgumentGraph.define_argument(units=[...], relations=[...]) -> ArgumentBundle`
-- `ArgumentGraph.to_argument_graph() -> DungAF` where nodes are bundles and edges are aggregated support/attack between bundles.
-This keeps claim-level edges consistent with Dung/ABA while allowing users to reason at a higher argument abstraction layer.
+- `ArgumentGraph.to_argument_graph() -> ArgumentBundleGraph` where nodes are bundles and edges are aggregated support/attack between bundles.
+This keeps claim-level edges consistent while allowing users to reason at a higher argument abstraction layer.
 
 ---
 
@@ -172,33 +172,11 @@ This keeps claim-level edges consistent with Dung/ABA while allowing users to re
 - `viz/` renderers
 - `algorithms/` graph theory
 
-## Layer 1 — Argumentation Semantics
-### AAF (Dung)
-- Build `DungAF` from `ArgumentGraph` via a projection:
-  - Nodes become arguments
-  - `attack` edges become attacks
-  - optional: map undercut/rebut to attack variants
-  - when using `ArgumentBundle`, each bundle becomes an argument node; edges are aggregated across bundle boundaries
-
-Functions:
-- `extensions(semi=...)` for grounded / preferred / stable / complete
-- `labelings(...)` (in/out/undec)
-- `admissible_sets()`
-- `skeptical_acceptance(arg)` / `credulous_acceptance(arg)`
-
-### ABA
-Provide an ABA DSL:
-```python
-aba = ABAFramework()
-aba.add_assumption("a")
-aba.add_contrary("a", "not_a")
-aba.add_rule(head="p", body=["a", "q"])
-
-result = aba.compute(semantics="preferred")
-```
-
-Under the hood:
-- Translate to AF when convenient; otherwise compute directly (dispute trees).
+## Layer 1 - Warrant-gated Semantics
+- Evidence support is computed for claims and warrants.
+- Warrant scores gate edge transmission (AND/OR).
+- Claim scores update from evidence plus gated influences.
+- Flaw patterns invalidate or restrict gates (diagnostics, not direct score penalties).
 
 ## Layer 2 — AI-Assisted Mining & Critique
 ### Argument mining pipeline (end-to-end)
@@ -287,13 +265,14 @@ G.add_evidence_card(card)
 G.attach_evidence_card(c1, card.id)
 ```
 
-## Convert to formal frameworks
+## Compute warrant-gated scores
 ```python
-af = G.to_dung()
-ext = af.extensions("grounded")
-accepted = af.skeptically_accepted()
+from arglib.reasoning import compute_credibility
 
-baf = G.to_bipolar()
+cred = compute_credibility(G)
+claim_scores = cred.final_scores
+warrant_scores = cred.warrant_scores
+gate_scores = cred.gate_scores
 ```
 
 ## Run diagnostics
@@ -330,7 +309,7 @@ from arglib.reasoning import Reasoner
 
 r = Reasoner(graph=G)
 res = r.run(
-  tasks=["grounded_extension","preferred_extensions","skeptical_acceptance"],
+  tasks=["credibility", "claim_scores", "warrant_scores", "gate_scores"],
   explain=True
 )
 ```
@@ -341,9 +320,8 @@ res = r.run(
 - Support edges add influence, attack edges subtract influence (using absolute source score).
 
 ## Explanations
-- For AAF: return *witnesses* (defense chains, attackers defeated).
-- For ABA: return dispute trees / derivations.
-- For weighted layers: return score contributions (evidence + edge influence).
+- Return score contributions (evidence + gated edge influence).
+- Reference which warrants gated each edge and which gates were disabled.
 
 ---
 
@@ -402,17 +380,10 @@ arglib/
     cycles.py
     flow.py
     clustering.py
-  semantics/
-    dung.py
-    bipolar.py
-    aba/
-      framework.py
-      solvers.py
-      dispute_trees.py
   reasoning/
     reasoner.py
-    explain.py
-    metrics.py
+    warrant_gated.py
+    credibility.py
   critique/
     assumptions.py
     patterns.py
@@ -435,8 +406,6 @@ arglib/
     commands.py
   tests/
     test_core.py
-    test_dung.py
-    test_aba.py
     test_io.py
     test_miner.py
 ```
@@ -470,29 +439,26 @@ These choices are fixed unless explicitly revised.
 ## Claim vs. argument abstraction
 - Claims are the canonical nodes in `ArgumentGraph`.
 - Arguments are defined as bundles of claims (connected subgraphs).
-- Formal AF nodes can map to bundles (argument-level) or claims (claim-level) depending on projection.
-
-## BipolarAF timing
-- `BipolarAF` becomes first-class in v0.2 alongside ABA dispute trees.
-- Support edges are positive influences; attack edges are negative influences.
+- Bundles provide an optional higher-level abstraction for aggregation.
 
 ## Evidence score ranges
-- Use [-1, 1] for support/attack confidence (edges, evidence confidence).
-- Use [0, 1] for quality/reliability sub-scores in `EvidenceItem.quality`.
+- Use [0, 1] for evidence confidence and document trust.
+- Use [0, 1] for claim and warrant support scores.
+- Use [-1, 1] only for signed stance (support/attack) when needed.
 
 ---
 
 # Versioned Milestones
 ## v0.1 (Core)
 - `ArgumentGraph` + IO JSON + Graphviz render
-- Dung AF conversion + grounded/preferred/stable
+- Warrant-gated credibility propagation + gate scores
 - Basic diagnostics (cycles, components)
 - CLI validation + docs scaffolding
 
-## v0.2 (ABA)
-- ABA framework + at least one solver path (AF translation or direct)
-- Explanations (defense chains / dispute trees)
-- Edge validation + evidence scoring + credibility propagation
+## v0.2 (Warrant-gated diagnostics)
+- Warrant-gated explanations and gate invalidation policies
+- Edge validation + evidence scoring
+- Flaw/pattern detection + repair suggestions
 - Argument bundling (argument = subgraph) + projection to argument graph
 
 ## v0.3 (Batteries)
@@ -520,7 +486,7 @@ These choices are fixed unless explicitly revised.
   - from chat transcripts
   - from OSINT doc bundles
   - from multimodal reports
-- Formal semantics primer (Dung/ABA) + practical examples
+- Warrant-gated reasoning primer + practical examples
 - Reproducible benchmarks and evaluation on multiple datasets
 
 ---
@@ -528,7 +494,7 @@ These choices are fixed unless explicitly revised.
 # Open Questions (deferred decisions)
 - Canonical schema: your JSON vs JSON-LD vs AIF as default
 - How to represent **argument schemes** (Walton-style) vs pure support/attack
-- Weighted semantics: keep separate from formal AAF/ABA or integrate
+- Weighted semantics: keep separate from warrant-gated scoring or integrate
 - Model distribution: bundled weights vs optional download
 
    - Graph reconciliation: deduplicate claims, resolve cross-chunk coreference, and merge edges with provenance.

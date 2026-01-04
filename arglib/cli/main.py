@@ -8,7 +8,6 @@ from pathlib import Path
 
 from arglib import __version__
 from arglib.io import load, validate_graph_payload
-from arglib.semantics import ABAFramework
 from arglib.viz import to_dot
 
 
@@ -42,22 +41,6 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser("version", help="Print the ArgLib version.")
 
-    aba_parser = subparsers.add_parser(
-        "aba", help="Compute ABA extensions from a JSON definition."
-    )
-    aba_parser.add_argument("path", help="Path to an ABA JSON file.")
-    aba_parser.add_argument(
-        "--semantics",
-        default="preferred",
-        help="Semantics to compute (default: preferred).",
-    )
-    aba_parser.add_argument(
-        "--max-set-size",
-        type=int,
-        default=2,
-        help="Max assumption set size for attack derivation (default: 2).",
-    )
-
     return parser
 
 
@@ -83,32 +66,6 @@ def main(argv: list[str] | None = None) -> int:
         payload = json.loads(Path(args.path).read_text(encoding="utf-8"))
         validate_graph_payload(payload)
         print("OK")
-        return 0
-
-    if args.command == "aba":
-        payload = json.loads(Path(args.path).read_text(encoding="utf-8"))
-        assumptions = payload.get("assumptions", [])
-        contraries = payload.get("contraries", {})
-        rules = payload.get("rules", [])
-
-        aba = ABAFramework()
-        for assumption in assumptions:
-            aba.add_assumption(assumption)
-        for assumption, contrary in contraries.items():
-            aba.add_contrary(assumption, contrary)
-        for rule in rules:
-            aba.add_rule(rule["head"], rule.get("body", []))
-
-        result = aba.compute(args.semantics)
-        if args.max_set_size != 2:
-            result["max_assumption_set_size"] = args.max_set_size
-            result["extensions"] = [
-                sorted(ext)
-                for ext in aba.to_dung(
-                    max_assumption_set_size=args.max_set_size
-                ).extensions(args.semantics)
-            ]
-        print(json.dumps(result, indent=2, sort_keys=True))
         return 0
 
     parser.error(f"Unknown command: {args.command}")

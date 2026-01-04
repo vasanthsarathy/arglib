@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any, Literal
 
 from .bundles import ArgumentBundle, ArgumentBundleGraph
 from .evidence import EvidenceCard, EvidenceItem, SupportingDocument
@@ -11,9 +11,6 @@ from .relations import Relation
 from .spans import TextSpan
 from .units import ArgumentUnit
 from .warrants import Warrant, WarrantAttack
-
-if TYPE_CHECKING:
-    from arglib.semantics import DungAF
 
 
 @dataclass
@@ -293,18 +290,6 @@ class ArgumentGraph:
             argument_bundles=argument_bundles,
         )
 
-    def to_dung(self, include_relations: list[str] | None = None) -> DungAF:
-        from arglib.semantics import DungAF
-
-        if include_relations is None:
-            include_relations = ["attack", "undercut", "rebut"]
-
-        af = DungAF(arguments=set(self.units.keys()))
-        for relation in self.relations:
-            if relation.kind in include_relations:
-                af.add_attack(relation.src, relation.dst)
-        return af
-
     def define_argument(
         self,
         units: list[str],
@@ -444,10 +429,14 @@ class ArgumentGraph:
         }
 
     def critique(self) -> dict[str, Any]:
-        from arglib.critique import suggest_missing_assumptions
+        from arglib.critique import analyze_warrant_fragility, detect_patterns, suggest_missing_assumptions
 
         return {
             "missing_assumptions": suggest_missing_assumptions(self),
+            "patterns": [match.to_dict() for match in detect_patterns(self)],
+            "warrant_fragility": [
+                item.to_dict() for item in analyze_warrant_fragility(self)
+            ],
         }
 
     def _next_id(self, prefix: str) -> str:

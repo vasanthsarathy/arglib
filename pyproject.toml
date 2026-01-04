@@ -33,7 +33,7 @@ where = ["."]
 include = ["arglib*"]
 
 [tool.setuptools.package-data]
-arglib = ["data/*.json"]
+arglib = ["data/*.json", "data/*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

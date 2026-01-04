@@ -31,12 +31,12 @@ from arglib.io import dumps
 payload = dumps(graph)
 ```
 
-## Run semantics
+## Run scoring
 ```python
-from arglib.reasoning import Reasoner
+from arglib.reasoning import compute_credibility
 
-reasoner = Reasoner(graph)
-results = reasoner.run(["grounded_extension"])
+credibility = compute_credibility(graph)
+scores = credibility.final_scores
 ```
 
 ## Export DOT
@@ -67,7 +67,7 @@ card = EvidenceCard(
     metadata={"source_type": "report", "method": "observational"},
 )
 graph.add_evidence_card(card)
-graph.attach_evidence_card(c1, card.id)
+graph.attach_evidence_card(a, card.id)
 scores = score_evidence(graph)
 ```
 
@@ -75,17 +75,6 @@ scores = score_evidence(graph)
 ```python
 bundle = graph.define_argument([c1, c2], bundle_id="arg-1")
 arg_graph = graph.to_argument_graph()
-```
-
-## ABA dispute trees
-```python
-from arglib.semantics.aba import ABAFramework
-
-aba = ABAFramework()
-aba.add_assumption("a")
-aba.add_contrary("a", "not_a")
-aba.add_rule("b", ["a"])
-trees = aba.dispute_trees()
 ```
 
 ## Long-document mining workflow

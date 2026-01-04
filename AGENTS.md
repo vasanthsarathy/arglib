@@ -56,8 +56,9 @@ Keep new work mapped to these milestones, and update the spec if scope shifts.
 ## Current Focus
 Maintain a short "memory" of the current focus here. Update this section when the plan changes so future sessions start with the right context and next steps.
 Current focus:
-- Align spec/roadmap with the long-document mining pipeline (split, build subgraphs, reconcile, unify).
-- Track Intelliproof and argument-mining feature parity (extraction, evidence quality, strength propagation).
+- Align specs/docs/roadmaps with the warrant-gated claim graph model; remove deprecated Dung/ABA references.
+- Implement the warrant-gated flaw/pattern pipeline (pattern bank, gate invalidation, explanations).
+- Track Intelliproof parity: extraction, evidence quality, strength propagation, and UI-ready diagnostics.
 
 ## Specification Updates
 Major behavior changes should update the design spec in `specs/argumentation_library_design_spec_batteries_included_python.md` so implementation and documentation stay aligned.

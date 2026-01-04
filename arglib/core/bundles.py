@@ -3,12 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from .relations import Relation
-
-if TYPE_CHECKING:
-    from arglib.semantics import DungAF
 
 
 @dataclass
@@ -64,15 +61,3 @@ class ArgumentBundleGraph:
             relations=relations,
             metadata=data.get("metadata", {}),
         )
-
-    def to_dung(self, include_relations: list[str] | None = None) -> DungAF:
-        from arglib.semantics import DungAF
-
-        if include_relations is None:
-            include_relations = ["attack", "undercut", "rebut"]
-
-        af = DungAF(arguments=set(self.bundles.keys()))
-        for relation in self.relations:
-            if relation.kind in include_relations:
-                af.add_attack(relation.src, relation.dst)
-        return af

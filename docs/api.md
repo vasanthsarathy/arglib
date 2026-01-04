@@ -11,18 +11,18 @@ This is a lightweight overview of the public API. Full API documentation will ex
 - `ArgumentBundle` and `ArgumentBundleGraph` for argument-as-subgraph abstraction.
     - `ArgumentGraph.define_argument(...)` and `to_argument_graph()` project bundles.
 
-## Semantics
-- `DungAF`: Dung-style abstract argumentation framework (`arglib/semantics/dung.py`)
-- `ABAFramework`: minimal ABA scaffolding (`arglib/semantics/aba/framework.py`)
-    - `ABAFramework.dispute_trees()` for dispute tree generation.
-
 ## Reasoning
 - `Reasoner`: unified reasoning entrypoint (`arglib/reasoning/reasoner.py`)
-- `compute_credibility`: evidence + edge propagation scoring (`arglib/reasoning/credibility.py`)
+- `compute_credibility`: warrant-gated credibility propagation (`arglib/reasoning/credibility.py`)
+- `explain_credibility`: break down evidence and gated influences (`arglib/reasoning/explain.py`)
 
 ## AI Evaluation
 - `score_evidence` and `validate_edges` provide deterministic evaluation helpers.
 - `HeuristicEvaluator` is a baseline; LLM adapters can swap in later.
+
+## Critique
+- `detect_patterns` and `apply_gate_actions` for flaw detection and gate invalidation.
+- `analyze_warrant_fragility` to identify critical warrants per edge.
 
 ## Mining
 - `ArgumentMiner`, `SimpleArgumentMiner`, and `LongDocumentMiner` for extraction pipelines.

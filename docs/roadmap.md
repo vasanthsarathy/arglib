@@ -5,16 +5,16 @@ This roadmap reflects the design spec and current implementation status. Items a
 ## v0.1 (publishable core)
 - Core graph model (`ArgumentGraph`, `ArgumentUnit`, `Relation`, evidence, spans).
 - JSON IO and schema validation.
-- Dung semantics (grounded/preferred/stable/complete) + diagnostics.
+- Warrant-gated credibility propagation + gate scores.
 - Graphviz DOT export and CLI commands.
 - Docs scaffolding and CI/CD.
 
-## v0.2 (ABA + explanations)
-- ABA dispute trees and reasoning explanations.
+## v0.2 (warrant-gated diagnostics)
+- Warrant-gated explanations (claim, warrant, gate contributions).
 - Evidence scoring and edge validation with confidence.
-- Credibility propagation (evidence + network influence).
+- Flaw/pattern detection with gate invalidation policies.
 - Argument bundling: argument = subgraph; bundle graph projection.
-Current status: dispute trees, evidence scoring/edge validation, and bundling/credibility propagation complete.
+Current status: evidence scoring/edge validation and bundling/credibility propagation complete.
 
 ## v0.3 (AI/mining + datasets)
 - Argument mining pipeline: ADU extraction, relations, claim types, alignment.

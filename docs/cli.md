@@ -25,8 +25,3 @@ uv run arglib validate path/to/graph.json
 ```bash
 uv run arglib version
 ```
-
-### ABA
-```bash
-uv run arglib aba path/to/aba.json --semantics preferred
-```

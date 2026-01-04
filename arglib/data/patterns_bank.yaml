@@ -1,0 +1,37 @@
+patterns:
+  - id: circular_reasoning
+    name: Circular Reasoning
+    category: Structural
+    kind: fallacious
+    action: disable_edge
+    description: A claim ultimately supports itself through a support cycle.
+  - id: self_attack
+    name: Self-Attack
+    category: Structural
+    kind: fallacious
+    action: disable_edge
+    description: A node attacks itself, contradicting its own claim.
+  - id: unsupported_conclusion
+    name: Unsupported Conclusion
+    category: Structural
+    kind: fallacious
+    action: flag_node
+    description: A claim has no incoming support edges.
+  - id: redundancy
+    name: Redundancy
+    category: Structural
+    kind: fallacious
+    action: flag_node
+    description: Multiple equivalent supports to the same conclusion.
+  - id: contradiction
+    name: Contradiction
+    category: Structural
+    kind: fallacious
+    action: flag_edge
+    description: Support and attack edges target the same claim from a source.
+  - id: unstated_warrant
+    name: Unstated Warrant
+    category: Substructural
+    kind: fallacious
+    action: disable_edge
+    description: An edge has no explicit warrants gating its inference.
