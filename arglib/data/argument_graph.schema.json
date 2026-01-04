@@ -18,6 +18,9 @@
           "evidence_ids": { "type": "array", "items": { "type": "string" } },
           "evidence_min": { "type": ["number", "null"] },
           "evidence_max": { "type": ["number", "null"] },
+          "score": { "type": ["number", "null"] },
+          "is_axiom": { "type": "boolean" },
+          "ignore_influence": { "type": "boolean" },
           "metadata": { "type": "object" }
         }
       }

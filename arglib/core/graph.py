@@ -43,6 +43,8 @@ class ArgumentGraph:
         evidence_min: float | None = None,
         evidence_max: float | None = None,
         score: float | None = None,
+        is_axiom: bool = False,
+        ignore_influence: bool = False,
     ) -> str:
         if claim_id is None:
             claim_id = self._next_id("c")
@@ -56,6 +58,8 @@ class ArgumentGraph:
             evidence_min=evidence_min,
             evidence_max=evidence_max,
             score=score,
+            is_axiom=is_axiom,
+            ignore_influence=ignore_influence,
             metadata=dict(metadata or {}),
         )
         self.units[claim_id] = unit
@@ -122,6 +126,8 @@ class ArgumentGraph:
         metadata: dict[str, Any] | None = None,
         evidence_ids: list[str] | None = None,
         score: float | None = None,
+        is_axiom: bool = False,
+        ignore_influence: bool = False,
     ) -> str:
         if warrant_id is None:
             warrant_id = self._next_id("w")
@@ -133,6 +139,8 @@ class ArgumentGraph:
             evidence=list(evidence or []),
             evidence_ids=list(evidence_ids or []),
             score=score,
+            is_axiom=is_axiom,
+            ignore_influence=ignore_influence,
             metadata=dict(metadata or {}),
         )
         self.warrants[warrant_id] = warrant
@@ -392,6 +400,21 @@ class ArgumentGraph:
             node for node, degree in support_degrees.items() if degree["in"] == 0
         ]
         attack_edges = build_edges(relations, kinds=["attack", "undercut", "rebut"])
+        axiom_claims = sorted(
+            unit_id for unit_id, unit in self.units.items() if unit.is_axiom
+        )
+        axiom_warrants = sorted(
+            warrant_id
+            for warrant_id, warrant in self.warrants.items()
+            if warrant.is_axiom
+        )
+        axiom_warnings = [
+            f"axiom claim '{unit_id}' bypasses evidence requirements."
+            for unit_id in axiom_claims
+        ] + [
+            f"axiom warrant '{warrant_id}' bypasses evidence requirements."
+            for warrant_id in axiom_warrants
+        ]
 
         node_count = len(nodes)
         relation_count = len(self.relations)
@@ -426,6 +449,8 @@ class ArgumentGraph:
             "max_reachability": max(
                 (len(targets) for targets in reachability.values()), default=0
             ),
+            "axioms": {"claims": axiom_claims, "warrants": axiom_warrants},
+            "axiom_warnings": axiom_warnings,
         }
 
     def critique(self) -> dict[str, Any]:

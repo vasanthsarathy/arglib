@@ -39,6 +39,13 @@ credibility = compute_credibility(graph)
 scores = credibility.final_scores
 ```
 
+## Axioms
+```python
+claim = graph.add_claim("We accept this premise.", is_axiom=True, score=0.4)
+warrant = graph.add_warrant("Shared background assumption.", is_axiom=True, score=0.5)
+graph.units[claim].ignore_influence = True
+```
+
 ## Export DOT
 ```python
 from arglib.viz import to_dot

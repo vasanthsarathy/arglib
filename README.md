@@ -11,6 +11,7 @@ ArgLib is a batteries-included Python library for creating, importing, analyzing
 ## Highlights
 - Canonical `ArgumentGraph` model with provenance-aware nodes and relations.
 - Warrant-gated scoring with claim, warrant, and gate scores.
+- Axiom flags to seed manual scores with optional influence locking.
 - Diagnostics for cycles, components, reachability, and degree stats.
 - JSON IO with schema validation and Graphviz DOT export.
 - CLI tools for DOT, diagnostics, and validation.
@@ -43,6 +44,13 @@ from arglib.ai import score_evidence, validate_edges
 
 scores = score_evidence(graph)
 edge_report = validate_edges(graph)
+```
+
+## Axioms
+```python
+claim = graph.add_claim("Assume baseline demand holds.", is_axiom=True, score=0.6)
+warrant = graph.add_warrant("This baseline is reliable.", is_axiom=True, score=0.7)
+graph.units[claim].ignore_influence = True
 ```
 
 ## Bundles and credibility propagation

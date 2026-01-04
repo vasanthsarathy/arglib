@@ -41,6 +41,18 @@ def compute_warrant_gated_scores(
         warrant_id: _evidence_support(warrant, graph)
         for warrant_id, warrant in graph.warrants.items()
     }
+    for unit_id, unit in graph.units.items():
+        if unit.is_axiom:
+            base = _clamp(
+                float(unit.score) if unit.score is not None else 0.0, -1.0, 1.0
+            )
+            claim_ev[unit_id] = base
+    for warrant_id, warrant in graph.warrants.items():
+        if warrant.is_axiom:
+            base = _clamp(
+                float(warrant.score) if warrant.score is not None else 0.0, -1.0, 1.0
+            )
+            warrant_ev[warrant_id] = base
 
     claim_scores = {
         unit_id: _sigmoid(cfg.alpha * ev) for unit_id, ev in claim_ev.items()
@@ -148,14 +160,24 @@ def _update_warrants(
     cfg: WarrantGatedConfig,
 ) -> dict[str, float]:
     incoming: dict[str, list[float]] = {w: [] for w in graph.warrants}
+    ignore_warrants = {
+        warrant_id
+        for warrant_id, warrant in graph.warrants.items()
+        if warrant.ignore_influence
+    }
     for attack in graph.warrant_attacks:
+        if attack.warrant_id in ignore_warrants:
+            continue
         src_score = claim_scores.get(attack.src, 0.0)
         incoming.setdefault(attack.warrant_id, []).append(-src_score)
 
     new_scores: dict[str, float] = {}
     for warrant_id in graph.warrants:
         ev = warrant_ev.get(warrant_id, 0.0)
-        influence = sum(incoming.get(warrant_id, []))
+        if warrant_id in ignore_warrants:
+            influence = 0.0
+        else:
+            influence = sum(incoming.get(warrant_id, []))
         z = cfg.alpha * ev + cfg.beta * _clamp(
             influence, -cfg.clamp_influence, cfg.clamp_influence
         )
@@ -193,7 +215,14 @@ def _update_claims(
     cfg: WarrantGatedConfig,
 ) -> dict[str, float]:
     incoming: dict[str, list[float]] = {unit_id: [] for unit_id in graph.units}
+    ignore_units = {
+        unit_id
+        for unit_id, unit in graph.units.items()
+        if unit.ignore_influence
+    }
     for index, relation in enumerate(graph.relations):
+        if relation.dst in ignore_units:
+            continue
         sign = 1.0 if relation.kind == "support" else -1.0
         src_score = claim_scores.get(relation.src, 0.0)
         gate = gate_scores.get(f"e{index}", 0.0)
@@ -203,7 +232,10 @@ def _update_claims(
     new_scores: dict[str, float] = {}
     for unit_id in graph.units:
         ev = claim_ev.get(unit_id, 0.0)
-        influence = sum(incoming.get(unit_id, []))
+        if unit_id in ignore_units:
+            influence = 0.0
+        else:
+            influence = sum(incoming.get(unit_id, []))
         z = cfg.alpha * ev + cfg.beta * _clamp(
             influence, -cfg.clamp_influence, cfg.clamp_influence
         )

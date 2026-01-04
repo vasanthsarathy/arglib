@@ -18,6 +18,8 @@ class Warrant:
     evidence: list[EvidenceItem] = field(default_factory=list)
     evidence_ids: list[str] = field(default_factory=list)
     score: float | None = None
+    is_axiom: bool = False
+    ignore_influence: bool = False
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -29,6 +31,8 @@ class Warrant:
             "evidence": [item.to_dict() for item in self.evidence],
             "evidence_ids": list(self.evidence_ids),
             "score": self.score,
+            "is_axiom": self.is_axiom,
+            "ignore_influence": self.ignore_influence,
             "metadata": self.metadata,
         }
 
@@ -44,6 +48,8 @@ class Warrant:
             ],
             evidence_ids=list(data.get("evidence_ids", [])),
             score=data.get("score"),
+            is_axiom=bool(data.get("is_axiom", False)),
+            ignore_influence=bool(data.get("ignore_influence", False)),
             metadata=data.get("metadata", {}),
         )
 

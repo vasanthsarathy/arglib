@@ -69,6 +69,12 @@ def validate_graph_dict(data: dict[str, Any]) -> list[str]:
         if "score" in unit and unit["score"] is not None:
             if not isinstance(unit["score"], (int, float)):
                 errors.append(f"unit '{unit_id}' score must be a number.")
+        if "is_axiom" in unit and not isinstance(unit["is_axiom"], bool):
+            errors.append(f"unit '{unit_id}' is_axiom must be a boolean.")
+        if "ignore_influence" in unit and not isinstance(
+            unit["ignore_influence"], bool
+        ):
+            errors.append(f"unit '{unit_id}' ignore_influence must be a boolean.")
         if "metadata" in unit and not isinstance(unit["metadata"], dict):
             errors.append(f"unit '{unit_id}' metadata must be an object.")
         for evidence_id in unit.get("evidence_ids", []):
@@ -129,6 +135,15 @@ def validate_graph_dict(data: dict[str, Any]) -> list[str]:
             errors.append(f"warrant '{warrant_id}' id field does not match its key.")
         if "evidence_ids" in warrant and not isinstance(warrant["evidence_ids"], list):
             errors.append(f"warrant '{warrant_id}' evidence_ids must be a list.")
+        if "score" in warrant and warrant["score"] is not None:
+            if not isinstance(warrant["score"], (int, float)):
+                errors.append(f"warrant '{warrant_id}' score must be a number.")
+        if "is_axiom" in warrant and not isinstance(warrant["is_axiom"], bool):
+            errors.append(f"warrant '{warrant_id}' is_axiom must be a boolean.")
+        if "ignore_influence" in warrant and not isinstance(
+            warrant["ignore_influence"], bool
+        ):
+            errors.append(f"warrant '{warrant_id}' ignore_influence must be a boolean.")
         for evidence_id in warrant.get("evidence_ids", []):
             if evidence_cards and evidence_id not in evidence_cards:
                 errors.append(

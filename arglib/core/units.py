@@ -20,6 +20,8 @@ class ArgumentUnit:
     evidence_min: float | None = None
     evidence_max: float | None = None
     score: float | None = None
+    is_axiom: bool = False
+    ignore_influence: bool = False
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -33,6 +35,8 @@ class ArgumentUnit:
             "evidence_min": self.evidence_min,
             "evidence_max": self.evidence_max,
             "score": self.score,
+            "is_axiom": self.is_axiom,
+            "ignore_influence": self.ignore_influence,
             "metadata": self.metadata,
         }
 
@@ -50,5 +54,7 @@ class ArgumentUnit:
             evidence_min=data.get("evidence_min"),
             evidence_max=data.get("evidence_max"),
             score=data.get("score"),
+            is_axiom=bool(data.get("is_axiom", False)),
+            ignore_influence=bool(data.get("ignore_influence", False)),
             metadata=data.get("metadata", {}),
         )
