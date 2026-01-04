@@ -429,7 +429,11 @@ class ArgumentGraph:
         }
 
     def critique(self) -> dict[str, Any]:
-        from arglib.critique import analyze_warrant_fragility, detect_patterns, suggest_missing_assumptions
+        from arglib.critique import (
+            analyze_warrant_fragility,
+            detect_patterns,
+            suggest_missing_assumptions,
+        )
 
         return {
             "missing_assumptions": suggest_missing_assumptions(self),

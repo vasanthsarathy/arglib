@@ -214,7 +214,7 @@ def apply_gate_actions(graph: ArgumentGraph, matches: list[PatternMatch]) -> Non
 
 
 def _cycle_edges(cycle: list[str]) -> list[tuple[str, str]]:
-    return list(zip(cycle, cycle[1:] + [cycle[0]]))
+    return list(zip(cycle, cycle[1:] + [cycle[0]], strict=True))
 
 
 def _edge_ids_for_pairs(
@@ -249,7 +249,7 @@ def _detect_redundancy(
         by_target.setdefault(rel.dst, {}).setdefault(key, []).append(rel.src)
 
     for target, groups in by_target.items():
-        for key, sources in groups.items():
+        for _key, sources in groups.items():
             if len(sources) < 2:
                 continue
             matches.append(
