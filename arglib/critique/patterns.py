@@ -167,8 +167,8 @@ def detect_patterns(
         if rel.kind == "support":
             incoming_support.setdefault(rel.dst, []).append(index)
 
-    for claim_id, edges in incoming_support.items():
-        if not edges:
+    for claim_id, support_edge_ids in incoming_support.items():
+        if not support_edge_ids:
             pattern = bank["unsupported_conclusion"]
             matches.append(
                 PatternMatch(
@@ -322,11 +322,11 @@ def load_pattern_bank() -> dict[str, PatternDefinition]:
             continue
         bank[pattern_id] = PatternDefinition(
             pattern_id=pattern_id,
-            name=entry.get("name", pattern_id),
-            category=entry.get("category", "Uncategorized"),
-            kind=entry.get("kind", "fallacious"),
-            description=entry.get("description", ""),
-            action=entry.get("action", "flag_edge"),
+            name=str(entry.get("name") or pattern_id),
+            category=str(entry.get("category") or "Uncategorized"),
+            kind=str(entry.get("kind") or "fallacious"),
+            description=str(entry.get("description") or ""),
+            action=str(entry.get("action") or "flag_edge"),
         )
     for key, definition in _DEFAULT_PATTERNS.items():
         bank.setdefault(key, definition)
