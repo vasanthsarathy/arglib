@@ -70,7 +70,7 @@ def test_axiom_claims_and_warrants_seed_scores():
 
     result = compute_credibility(graph, lambda_=0.5)
 
-    assert result.final_scores[a] > 0.5
+    assert result.final_scores[a] > 0.9
     assert result.final_scores[b] > 0.5
 
 
@@ -88,4 +88,4 @@ def test_ignore_influence_keeps_axiom_base():
 
     result = compute_credibility(graph, lambda_=0.5)
 
-    assert result.final_scores[b] < 0.5
+    assert result.final_scores[b] < 0.01

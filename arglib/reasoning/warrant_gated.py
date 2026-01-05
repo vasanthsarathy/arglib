@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from math import exp
+import math
 
 from arglib.core import ArgumentGraph, ArgumentUnit, EvidenceCard, EvidenceItem, Warrant
 
@@ -43,16 +44,12 @@ def compute_warrant_gated_scores(
     }
     for unit_id, unit in graph.units.items():
         if unit.is_axiom:
-            base = _clamp(
-                float(unit.score) if unit.score is not None else 0.0, -1.0, 1.0
-            )
-            claim_ev[unit_id] = base
+            base = float(unit.score) if unit.score is not None else 0.0
+            claim_ev[unit_id] = _axiom_support(base, cfg.alpha)
     for warrant_id, warrant in graph.warrants.items():
         if warrant.is_axiom:
-            base = _clamp(
-                float(warrant.score) if warrant.score is not None else 0.0, -1.0, 1.0
-            )
-            warrant_ev[warrant_id] = base
+            base = float(warrant.score) if warrant.score is not None else 0.0
+            warrant_ev[warrant_id] = _axiom_support(base, cfg.alpha)
 
     claim_scores = {
         unit_id: _sigmoid(cfg.alpha * ev) for unit_id, ev in claim_ev.items()
@@ -124,6 +121,15 @@ def _evidence_support(node: ArgumentUnit | Warrant, graph: ArgumentGraph) -> flo
         return 0.0
     value = sum(signed_scores) / len(signed_scores)
     return _clamp(value, -1.0, 1.0)
+
+
+def _axiom_support(score: float, alpha: float) -> float:
+    base = _clamp(score, -1.0, 1.0)
+    probability = (base + 1.0) / 2.0
+    clamped = _clamp(probability, 1e-6, 1.0 - 1e-6)
+    if alpha <= 0:
+        return 0.0
+    return math.log(clamped / (1.0 - clamped)) / alpha
 
 
 def _evidence_item_score(item: EvidenceItem, graph: ArgumentGraph) -> float:
