@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from math import exp
-import math
 
 from arglib.core import ArgumentGraph, ArgumentUnit, EvidenceCard, EvidenceItem, Warrant
 
