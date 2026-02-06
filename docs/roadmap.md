@@ -18,10 +18,13 @@ Current status: evidence scoring/edge validation and bundling/credibility propag
 
 ## v0.3 (AI/mining + datasets)
 - Argument mining pipeline: ADU extraction, relations, claim types, alignment.
+- Deferred relevance modeling for chat memory (pending claims, later resolution links).
+- Grounded evidence modeling for chat/source workflows (evidence items + claim-evidence links).
 - Assumption generation (implicit premises).
 - Pattern bank + matcher + fallacy detection.
 - Graph-first dataset generator + linguistic style augmentation.
 - Dataset stats and pattern classification utilities.
+- Multitask training scaffolding (task converters, round-robin loaders, trainer skeleton).
 - Long-document mining: chunking, per-chunk graphs, reconciliation, and graph merging.
 
 ## v0.4 (Multimodal + provenance)

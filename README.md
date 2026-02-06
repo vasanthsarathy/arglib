@@ -18,6 +18,7 @@ ArgLib is a batteries-included Python library for creating, importing, analyzing
 - Argument bundles for higher-level reasoning and credibility propagation scoring.
 - Evidence cards and supporting documents for evidence pipelines.
 - Deterministic evidence scoring and edge validation helpers (LLM adapters planned).
+- Fast deterministic claim/relation tagging plus incremental conversation memory for chat streams.
 
 ## Install
 ```bash
@@ -44,6 +45,28 @@ from arglib.ai import score_evidence, validate_edges
 
 scores = score_evidence(graph)
 edge_report = validate_edges(graph)
+```
+
+## Fast Tagging + Chat Memory
+```python
+from arglib.ai import ConversationMemory, HybridClaimRelationTagger
+
+tagger = HybridClaimRelationTagger(model_path="models/small_tagger_v1.json")
+tagged = tagger.tag("The weather is worsening. Therefore, we should cut emissions.")
+
+memory = ConversationMemory()
+memory.ingest_turn("The weather is worsening.", speaker="assistant")
+memory.ingest_turn("The weather is not worsening.", speaker="assistant")
+```
+
+## Demo UI
+```bash
+arglib demo-ui --host 127.0.0.1 --port 8765
+```
+
+To auto-download model artifacts from Hugging Face at startup:
+```bash
+arglib demo-ui --auto-download-artifacts --artifact-manifest-path arglib/data/hf_artifacts.json
 ```
 
 ## Axioms
@@ -73,6 +96,19 @@ This repo uses `uv` for dependency management.
 ```bash
 uv sync
 scripts/check.sh
+```
+
+## Model Artifact Publishing (Hugging Face)
+Keep large checkpoints and training shards out of git and publish them to HF:
+```bash
+uv run python scripts/publish_hf_artifacts.py \
+  --model-repo-id <your-org-or-user>/arglib-artifacts \
+  --dataset-repo-id <your-org-or-user>/arglib-datasets
+```
+
+This writes `arglib/data/hf_artifacts.json`. To prefetch artifacts:
+```bash
+uv run python scripts/download_hf_artifacts.py --manifest-path arglib/data/hf_artifacts.json
 ```
 
 ## Documentation

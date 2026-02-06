@@ -27,6 +27,15 @@ dev = [
   "pypdf>=6.5.0",
   "ollama-python>=0.1.2",
 ]
+neural = [
+  "accelerate>=0.33",
+  "huggingface-hub>=0.24",
+  "numpy>=1.26",
+  "protobuf>=6.33.5",
+  "sentencepiece>=0.2.1",
+  "torch>=2.3",
+  "transformers>=4.44",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]

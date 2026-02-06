@@ -6,6 +6,12 @@ from .assumptions import (
     build_assumption_hook,
     generate_edge_assumptions,
 )
+from .artifacts import (
+    ArtifactRef,
+    download_artifact,
+    load_artifact_manifest,
+    resolve_or_download,
+)
 from .claim_types import (
     CLAIM_TYPE_TEMPLATE,
     ClaimTypeResult,
@@ -73,6 +79,33 @@ from .mining import (
     Splitter,
     token_jaccard_similarity,
 )
+from .neural_model import (
+    NeuralSequenceClassifier,
+    NeuralTaggerBundle,
+    NeuralTokenClassifier,
+    require_transformers,
+    transformers_available,
+)
+from .tagger import (
+    ClaimRelationTagger,
+    ConversationMemory,
+    EvidenceLinkPrediction,
+    HybridClaimRelationTagger,
+    TaggedClaim,
+    TaggedRelation,
+    TaggingResult,
+    TurnUpdate,
+)
+from .training import (
+    TASK_REGISTRY,
+    JsonlTaskDataset,
+    MultiTaskRoundRobinLoader,
+    TaskConfig,
+    TaskSpec,
+    TrainingConfig,
+    TrainResult,
+    train_multitask,
+)
 
 __all__ = [
     "ArgumentMiner",
@@ -87,6 +120,7 @@ __all__ = [
     "RELATION_INFERENCE_TEMPLATE",
     "AnthropicClient",
     "AsyncLongDocumentMiner",
+    "ArtifactRef",
     "ASSUMPTION_TEMPLATE",
     "CLAIM_TYPE_TEMPLATE",
     "CLAIM_CREDIBILITY_TEMPLATE",
@@ -107,6 +141,9 @@ __all__ = [
     "LongDocumentMiner",
     "MergePolicy",
     "MergeResult",
+    "NeuralSequenceClassifier",
+    "NeuralTaggerBundle",
+    "NeuralTokenClassifier",
     "NoOpLLMClient",
     "OllamaClient",
     "OpenAIClient",
@@ -117,7 +154,23 @@ __all__ = [
     "SimpleArgumentMiner",
     "SimpleGraphReconciler",
     "Splitter",
+    "ClaimRelationTagger",
+    "ConversationMemory",
+    "EvidenceLinkPrediction",
+    "HybridClaimRelationTagger",
+    "TaggedClaim",
+    "TaggedRelation",
+    "TaggingResult",
+    "TurnUpdate",
+    "JsonlTaskDataset",
+    "MultiTaskRoundRobinLoader",
+    "TASK_REGISTRY",
+    "TaskConfig",
+    "TaskSpec",
+    "TrainResult",
+    "TrainingConfig",
     "token_jaccard_similarity",
+    "train_multitask",
     "ExtractedClaim",
     "build_argument_mining_pipeline",
     "build_argument_miner",
@@ -132,4 +185,9 @@ __all__ = [
     "validate_edge_with_llm",
     "validate_edges",
     "build_claim_credibility_hook",
+    "download_artifact",
+    "require_transformers",
+    "load_artifact_manifest",
+    "resolve_or_download",
+    "transformers_available",
 ]

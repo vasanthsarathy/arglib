@@ -10,3 +10,9 @@ build/
 site/
 .external/
 specs/*.pdf
+
+# Large generated artifacts (published to Hugging Face instead)
+models/
+reports/
+data/training/
+*.safetensors
