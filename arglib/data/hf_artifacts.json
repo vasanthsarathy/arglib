@@ -1,1 +1,17 @@
-{}
+{
+  "small_tagger_v1": {
+    "repo_id": "vsarathy/arglib-artifacts",
+    "revision": "main",
+    "subdir": "small_tagger_v1"
+  },
+  "neural_tagger_v1": {
+    "repo_id": "vsarathy/arglib-artifacts",
+    "revision": "main",
+    "subdir": "neural_tagger_v1"
+  },
+  "multitask_training_data": {
+    "repo_id": "vsarathy/arglib-datasets",
+    "revision": "main",
+    "subdir": "multitask_training_data"
+  }
+}
