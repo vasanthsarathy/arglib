@@ -179,6 +179,7 @@ class DemoState:
     def __init__(
         self,
         model_path: str | None,
+        neural_model_dir: str | None = None,
         *,
         auto_download_artifacts: bool = False,
         artifact_manifest_path: str | None = None,
@@ -186,6 +187,7 @@ class DemoState:
     ) -> None:
         self.tagger = HybridClaimRelationTagger(
             model_path=model_path,
+            neural_model_dir=neural_model_dir,
             auto_download_artifacts=auto_download_artifacts,
             artifact_manifest_path=artifact_manifest_path,
             artifact_cache_dir=artifact_cache_dir,
@@ -265,12 +267,14 @@ def run_server(
     host: str,
     port: int,
     model_path: str | None,
+    neural_model_dir: str | None = None,
     auto_download_artifacts: bool = False,
     artifact_manifest_path: str | None = None,
     artifact_cache_dir: str | None = None,
 ) -> None:
     state = DemoState(
         model_path=model_path,
+        neural_model_dir=neural_model_dir,
         auto_download_artifacts=auto_download_artifacts,
         artifact_manifest_path=artifact_manifest_path,
         artifact_cache_dir=artifact_cache_dir,
@@ -401,6 +405,7 @@ def main() -> None:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--model-path", default="models/small_tagger_v1.json")
+    parser.add_argument("--neural-model-dir", default=None)
     parser.add_argument("--auto-download-artifacts", action="store_true")
     parser.add_argument("--artifact-manifest-path", default=None)
     parser.add_argument("--artifact-cache-dir", default=None)
@@ -409,6 +414,7 @@ def main() -> None:
         host=args.host,
         port=args.port,
         model_path=args.model_path,
+        neural_model_dir=args.neural_model_dir,
         auto_download_artifacts=args.auto_download_artifacts,
         artifact_manifest_path=args.artifact_manifest_path,
         artifact_cache_dir=args.artifact_cache_dir,

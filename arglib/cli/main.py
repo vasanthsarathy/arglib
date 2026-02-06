@@ -46,6 +46,7 @@ def build_parser() -> argparse.ArgumentParser:
     demo_parser.add_argument("--host", default="127.0.0.1")
     demo_parser.add_argument("--port", type=int, default=8765)
     demo_parser.add_argument("--model-path", default="models/small_tagger_v1.json")
+    demo_parser.add_argument("--neural-model-dir", default=None)
     demo_parser.add_argument("--auto-download-artifacts", action="store_true")
     demo_parser.add_argument("--artifact-manifest-path", default=None)
     demo_parser.add_argument("--artifact-cache-dir", default=None)
@@ -84,6 +85,7 @@ def main(argv: list[str] | None = None) -> int:
             host=args.host,
             port=args.port,
             model_path=args.model_path,
+            neural_model_dir=args.neural_model_dir,
             auto_download_artifacts=args.auto_download_artifacts,
             artifact_manifest_path=args.artifact_manifest_path,
             artifact_cache_dir=args.artifact_cache_dir,
