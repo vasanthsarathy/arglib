@@ -15,4 +15,5 @@ specs/*.pdf
 models/
 reports/
 data/training/
+data/multitask_training_data/
 *.safetensors
